@@ -1,119 +1,115 @@
 package view;
 
+import controller.AuthController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
-public class RegisterForm extends HBox {
-    public RegisterForm() {
-        Font robotoRegular = Font.font("Roboto", FontWeight.NORMAL, 16);
-        Font robotoBold = Font.font("Roboto", FontWeight.BOLD, 24);
+public class RegisterForm {
+    public static Scene createScene(Stage stage) {
+        Font font = Font.font("Roboto", FontWeight.NORMAL, 16);
+        Font titleFont = Font.font("Roboto", FontWeight.BOLD, 24);
 
-        // Left branding
-        VBox leftPane = new VBox(15);
-        leftPane.setAlignment(Pos.CENTER);
-        leftPane.setPadding(new Insets(40));
-        leftPane.setStyle("-fx-background-color: linear-gradient(to bottom, #004e92, #000428);");
-        leftPane.setPrefWidth(320);
+        VBox formBox = new VBox(15);
+        formBox.setPadding(new Insets(30));
+        formBox.setAlignment(Pos.CENTER);
+        formBox.setStyle("-fx-background-color: rgba(255, 255, 255, 0.2); -fx-background-radius: 20;");
+        formBox.setEffect(new DropShadow(100, Color.rgb(0, 0, 0, 0.3)));
 
-        Text welcomeText = new Text("Welcome to");
-        welcomeText.setFill(Color.WHITE);
-        welcomeText.setFont(robotoRegular);
-
-        Text appName = new Text("Spacer");
-        appName.setFill(Color.WHITE);
-        appName.setFont(Font.font("Roboto", FontWeight.BOLD, 36));
-
-        ImageView logoView = new ImageView();
-        try {
-            Image logo = new Image(getClass().getResource("/resources/download.png").toExternalForm());
-            logoView.setImage(logo);
-            logoView.setPreserveRatio(true);
-            logoView.setFitWidth(120);
-        } catch (Exception e) {
-            System.out.println("⚠️ Logo not loaded.");
-        }
-
-        Label description = new Label("Create a new account to start chatting instantly.");
-        description.setTextFill(Color.LIGHTGRAY);
-        description.setWrapText(true);
-        description.setFont(robotoRegular);
-        description.setMaxWidth(240);
-        description.setAlignment(Pos.CENTER);
-
-        leftPane.getChildren().addAll(welcomeText, logoView, appName, description);
-
-        // Right form
-        VBox rightPane = new VBox(20);
-        rightPane.setPadding(new Insets(40));
-        rightPane.setAlignment(Pos.TOP_CENTER);
-        rightPane.setStyle("-fx-background-color: #ffffff;");
-
-        Label formTitle = new Label("Create your account");
-        formTitle.setFont(robotoBold);
+        Label title = new Label("Register");
+        title.setFont(titleFont);
+        title.setTextFill(Color.WHITE);
 
         TextField nameField = new TextField();
         nameField.setPromptText("Name");
-        nameField.setFont(robotoRegular);
-        nameField.setMaxWidth(Double.MAX_VALUE);
+        nameField.setFont(font);
+        nameField.setStyle("-fx-background-radius: 30; -fx-padding: 10; -fx-background-color: white;");
 
         TextField emailField = new TextField();
         emailField.setPromptText("Email");
-        emailField.setFont(robotoRegular);
-        emailField.setMaxWidth(Double.MAX_VALUE);
+        emailField.setFont(font);
+        emailField.setStyle("-fx-background-radius: 30; -fx-padding: 10; -fx-background-color: white;");
 
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Password");
-        passwordField.setFont(robotoRegular);
-        passwordField.setMaxWidth(Double.MAX_VALUE);
+        passwordField.setFont(font);
+        passwordField.setStyle("-fx-background-radius: 30; -fx-padding: 10; -fx-background-color: white;");
 
-        CheckBox termsCheck = new CheckBox("By signing up, I agree to the Terms & Conditions");
-        termsCheck.setFont(Font.font("Roboto", 12));
-        termsCheck.setWrapText(true);
-        termsCheck.setMaxWidth(300);
+        Button registerBtn = new Button("Register");
+        registerBtn.setFont(font);
+        registerBtn.setMaxWidth(Double.MAX_VALUE);
+        registerBtn.setStyle("-fx-background-radius: 30; -fx-background-color: white; -fx-text-fill: #6a00f4; -fx-font-weight: bold; -fx-padding: 10;");
 
-        HBox buttons = new HBox(15);
-        buttons.setAlignment(Pos.CENTER);
-        Button registerBtn = new Button("Sign Up");
-        Button signInBtn = new Button("Sign In");
+        Hyperlink loginLink = new Hyperlink("Already have an account? Login");
+        loginLink.setTextFill(Color.WHITE);
 
-        registerBtn.setFont(robotoRegular);
-        registerBtn.setStyle("-fx-background-color: linear-gradient(to right, #004e92, #000428); -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-width: 120;");
+        formBox.getChildren().addAll(title, nameField, emailField, passwordField, registerBtn, loginLink);
+        formBox.setMaxWidth(350);
+        formBox.setMaxHeight(400);
 
-        signInBtn.setFont(robotoRegular);
-        signInBtn.setStyle("-fx-background-color: lightgray; -fx-font-weight: bold; -fx-pref-width: 120;");
+        Image bgImage = new Image(RegisterForm.class.getResource("/resources/BGLogin.jpg").toExternalForm());
+        ImageView bgView = new ImageView(bgImage);
+        bgView.setPreserveRatio(false);
+        bgView.setSmooth(true);
+        bgView.setCache(true);
 
-        buttons.getChildren().addAll(registerBtn, signInBtn);
+        StackPane root = new StackPane(bgView, formBox);
+//        Scene scene = new Scene(root, 800, 500);
+        Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
 
-        VBox formBox = new VBox(12);
-        formBox.setAlignment(Pos.CENTER_LEFT);
-        formBox.setFillWidth(true);
-        formBox.getChildren().addAll(
-                formTitle,
-                new Label("Name"), nameField,
-                new Label("Email Address"), emailField,
-                new Label("Password"), passwordField,
-                termsCheck,
-                buttons);
+        bgView.fitWidthProperty().bind(scene.widthProperty());
+        bgView.fitHeightProperty().bind(scene.heightProperty());
 
-        for (javafx.scene.Node node : formBox.getChildren()) {
-            if (node instanceof Label label) {
-                label.setFont(robotoRegular);
+        formBox.maxWidthProperty().bind(scene.widthProperty().multiply(0.35));
+        formBox.maxHeightProperty().bind(scene.heightProperty().multiply(0.6));
+
+        registerBtn.setOnAction(e -> {
+            String name = nameField.getText().trim();
+            String email = emailField.getText().trim();
+            String password = passwordField.getText();
+
+            if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                showAlert(Alert.AlertType.WARNING, "Please fill in all fields.");
+                return;
             }
-        }
 
-        rightPane.getChildren().add(formBox);
+            boolean success = AuthController.register(name, email, password);
+            if (success) {
+                showAlert(Alert.AlertType.INFORMATION, "Registration successful. Please log in.");
+                try {
+                    new AuthView().start(stage);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Username already exists.");
+            }
+        });
 
-        this.getChildren().addAll(leftPane, rightPane);
-        this.setPrefSize(900, 600);
-        HBox.setHgrow(leftPane, Priority.ALWAYS);
-        HBox.setHgrow(rightPane, Priority.ALWAYS);
+        loginLink.setOnAction(e -> {
+            try {
+                new AuthView().start(stage);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        return scene;
+    }
+
+    private static void showAlert(Alert.AlertType type, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle("Register");
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

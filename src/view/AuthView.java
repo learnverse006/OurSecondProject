@@ -1,7 +1,7 @@
 package view;
-
+import models.DatabaseConnection;
+import controller.AuthController;
 import javafx.application.Application;
-import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -72,6 +72,8 @@ public class AuthView extends Application {
         StackPane root = new StackPane(bgView, formBox);
 
         Scene scene = new Scene(root, 800, 500);
+//        primaryStage.setScene(scene);
+//        primaryStage.setFullScreen(true);
 
         bgView.fitWidthProperty().bind(scene.widthProperty());
         bgView.fitHeightProperty().bind(scene.heightProperty());
@@ -79,12 +81,61 @@ public class AuthView extends Application {
         formBox.maxWidthProperty().bind(scene.widthProperty().multiply(0.35));
         formBox.maxHeightProperty().bind(scene.heightProperty().multiply(0.5));
 
+        // Load remembered user if available
+//        AuthController.getRememberedUser().ifPresent(usernameField::setText);
+        AuthController.getRememberedUser().ifPresent(data -> {
+            usernameField.setText(data[0]);
+            passwordField.setText(data[1]);
+            rememberMe.setSelected(true);
+        });
+        loginBtn.setOnAction(e -> {
+            String username = usernameField.getText().trim();
+            String password = passwordField.getText();
+
+            if (username.isEmpty() || password.isEmpty()) {
+                showAlert(Alert.AlertType.WARNING, "Please enter both username and password.");
+                return;
+            }
+
+            boolean success = AuthController.login(username, password);
+            if (success) {
+                if (rememberMe.isSelected()) AuthController.saveRememberedUser(username, password);
+                else AuthController.clearRememberedUser();
+
+                showAlert(Alert.AlertType.INFORMATION, "Login successful!");
+                // TODO: load main view
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Invalid username or password.");
+            }
+        });
+
+        registerLink.setOnAction(e -> {
+            try {
+                Scene registerScene = RegisterForm.createScene(primaryStage);
+                primaryStage.setScene(registerScene);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        forgotPassword.setOnAction(e -> showAlert(Alert.AlertType.INFORMATION, "Password recovery not implemented yet."));
+
         primaryStage.setScene(scene);
         primaryStage.setTitle("CHAT APPLICATION");
         primaryStage.show();
+    }
+
+    private void showAlert(Alert.AlertType type, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle("Authentication");
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     public static void main(String[] args) {
         launch(args);
     }
 }
+
+
+
