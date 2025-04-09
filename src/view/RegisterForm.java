@@ -1,3 +1,4 @@
+// File: view/RegisterForm.java
 package view;
 
 import controller.AuthController;
@@ -63,7 +64,6 @@ public class RegisterForm {
         bgView.setCache(true);
 
         StackPane root = new StackPane(bgView, formBox);
-//        Scene scene = new Scene(root, 800, 500);
         Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
 
         bgView.fitWidthProperty().bind(scene.widthProperty());
@@ -85,23 +85,13 @@ public class RegisterForm {
             boolean success = AuthController.register(name, email, password);
             if (success) {
                 showAlert(Alert.AlertType.INFORMATION, "Registration successful. Please log in.");
-                try {
-                    new AuthView().start(stage);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+                stage.setScene(AuthView.createScene(stage));
             } else {
                 showAlert(Alert.AlertType.ERROR, "Username already exists.");
             }
         });
 
-        loginLink.setOnAction(e -> {
-            try {
-                new AuthView().start(stage);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        });
+        loginLink.setOnAction(e -> stage.setScene(AuthView.createScene(stage)));
 
         return scene;
     }

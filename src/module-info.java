@@ -8,4 +8,6 @@ module ChatApplication {
     requires java.desktop;
     opens view to javafx.graphics;
     exports view;
+    opens app to javafx.graphics;
+    exports app;
 }

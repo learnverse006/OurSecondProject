@@ -1,7 +1,7 @@
+// File: view/AuthView.java
 package view;
-import models.DatabaseConnection;
+
 import controller.AuthController;
-import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -15,9 +15,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
-public class AuthView extends Application {
-    @Override
-    public void start(Stage primaryStage) {
+public class AuthView {
+    public static Scene createScene(Stage primaryStage) {
         Font font = Font.font("Roboto", FontWeight.NORMAL, 16);
         Font titleFont = Font.font("Roboto", FontWeight.BOLD, 24);
 
@@ -63,17 +62,14 @@ public class AuthView extends Application {
         formBox.setMaxWidth(350);
         formBox.setMaxHeight(300);
 
-        Image bgImage = new Image(getClass().getResource("/resources/BGLogin.jpg").toExternalForm());
+        Image bgImage = new Image(AuthView.class.getResource("/resources/BGLogin.jpg").toExternalForm());
         ImageView bgView = new ImageView(bgImage);
         bgView.setPreserveRatio(false);
         bgView.setSmooth(true);
         bgView.setCache(true);
 
         StackPane root = new StackPane(bgView, formBox);
-
         Scene scene = new Scene(root, 800, 500);
-//        primaryStage.setScene(scene);
-//        primaryStage.setFullScreen(true);
 
         bgView.fitWidthProperty().bind(scene.widthProperty());
         bgView.fitHeightProperty().bind(scene.heightProperty());
@@ -81,13 +77,12 @@ public class AuthView extends Application {
         formBox.maxWidthProperty().bind(scene.widthProperty().multiply(0.35));
         formBox.maxHeightProperty().bind(scene.heightProperty().multiply(0.5));
 
-        // Load remembered user if available
-//        AuthController.getRememberedUser().ifPresent(usernameField::setText);
         AuthController.getRememberedUser().ifPresent(data -> {
             usernameField.setText(data[0]);
             passwordField.setText(data[1]);
             rememberMe.setSelected(true);
         });
+
         loginBtn.setOnAction(e -> {
             String username = usernameField.getText().trim();
             String password = passwordField.getText();
@@ -120,22 +115,13 @@ public class AuthView extends Application {
 
         forgotPassword.setOnAction(e -> showAlert(Alert.AlertType.INFORMATION, "Password recovery not implemented yet."));
 
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("CHAT APPLICATION");
-        primaryStage.show();
+        return scene;
     }
 
-    private void showAlert(Alert.AlertType type, String message) {
+    private static void showAlert(Alert.AlertType type, String message) {
         Alert alert = new Alert(type);
         alert.setTitle("Authentication");
         alert.setContentText(message);
         alert.showAndWait();
     }
-
-    public static void main(String[] args) {
-        launch(args);
-    }
 }
-
-
-
