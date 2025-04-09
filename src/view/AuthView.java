@@ -14,6 +14,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import models.User;
 
 public class AuthView {
     public static Scene createScene(Stage primaryStage) {
@@ -91,13 +92,16 @@ public class AuthView {
                 showAlert(Alert.AlertType.WARNING, "Please enter both username and password.");
                 return;
             }
-
+            User user = AuthController.LoginUser(username, password);
             boolean success = AuthController.login(username, password);
             if (success) {
                 if (rememberMe.isSelected()) AuthController.saveRememberedUser(username, password);
                 else AuthController.clearRememberedUser();
 
                 showAlert(Alert.AlertType.INFORMATION, "Login successful!");
+                Scene mainScene = ChatMainView.createScene(primaryStage, user);
+                primaryStage.setScene(mainScene);
+
                 // TODO: load main view
             } else {
                 showAlert(Alert.AlertType.ERROR, "Invalid username or password.");

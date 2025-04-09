@@ -19,7 +19,9 @@ public class AuthController {
         User user = UserDAO.findByUsername(username);
         return user != null && BCrypt.checkpw(password, user.getPasswordHash());
     }
-
+    public static User LoginUser(String username, String password) {
+        return UserDAO.findByUsername(username);
+    }
     public static boolean register(String name, String email, String password) {
         if (UserDAO.findByUsername(name) != null) return false;
         String hashed = BCrypt.hashpw(password, BCrypt.gensalt());
