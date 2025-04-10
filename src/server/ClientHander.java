@@ -1,4 +1,4 @@
-package models.testserver.server;
+package server;
 
 import java.io.*;
 import java.net.Socket;
