@@ -1,6 +1,6 @@
-package models.testserver.client;
+package client;
 
-import models.testserver.server.ChatServer;
+import server.ChatServer;
 
 public class ClientApp {
     public static void main(String[] args) {

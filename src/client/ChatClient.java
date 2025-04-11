@@ -1,4 +1,4 @@
-package models.testserver.client;
+package client;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
