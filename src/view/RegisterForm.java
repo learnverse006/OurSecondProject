@@ -1,4 +1,4 @@
-// File: view/RegisterForm.java
+
 package view;
 
 import controller.AuthController;

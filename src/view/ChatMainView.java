@@ -47,7 +47,7 @@ public class ChatMainView {
         welcomeLabel.setFont(Font.font(18));
 
         Button logoutBtn = new Button("Logout");
-        Button newChatBtn = new Button("+ New Chat");
+        Button newChatBtn = new Button("+ New Group Chat");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         header.getChildren().addAll(welcomeLabel, spacer, newChatBtn, logoutBtn);
@@ -55,23 +55,35 @@ public class ChatMainView {
 
         topBox.getChildren().add(header);
         root.setTop(topBox);
+        BorderPane mainContent = new BorderPane();
+        root.setCenter(mainContent);
 
-        // Main content with chat list on the left and chat view on the right
-        HBox mainContent = new HBox();
-        mainContent.setPadding(new Insets(10));
-        mainContent.setSpacing(10);
+//        HBox mainContent = new HBox();
+//        mainContent.setPadding(new Insets(10));
+//        mainContent.setSpacing(10);
+        //
+        logoutBtn.setOnAction(e -> stage.setScene(AuthView.createScene(stage)));
+        chatBtn.setOnAction(e -> {
+            HBox chatContainer = new HBox();
+            chatContainer.setPadding(new Insets(10));
+            chatContainer.setSpacing(10);
 
-        ChatListPane chatListPane = new ChatListPane(chatId -> {
-            ChatPane chatPane = new ChatPane(chatId);
-            if (mainContent.getChildren().size() > 1) {
-                mainContent.getChildren().set(1, chatPane.getView());
-            } else {
-                mainContent.getChildren().add(chatPane.getView());
-            }
+            BorderPane chatHolder = new BorderPane();
+            chatHolder.setPrefWidth(700);
+
+            ChatListPane chatListPane = new ChatListPane(chatId-> {
+                ChatPane chatPane = new ChatPane(chatId);
+                chatHolder.setCenter(chatPane.getView());
+            });
+            chatContainer.getChildren().addAll(chatListPane.getView(), chatHolder);
+            mainContent.setCenter(chatContainer);
+
         });
 
-        mainContent.getChildren().add(chatListPane.getView());
-        root.setCenter(mainContent);
+
+
+//        mainContent.getChildren().add(chatListPane.getView());
+//        root.setCenter(mainContent);
 
         return new Scene(root, 1000, 600);
     }
