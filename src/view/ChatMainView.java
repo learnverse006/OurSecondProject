@@ -27,16 +27,19 @@ public class ChatMainView {
         menuLabel.setFont(Font.font("Roboto", FontWeight.BOLD, 15));
         menuLabel.setStyle("-fx-text-fill: white;");
 
+        // Set Button for left bar
         Button chatBtn = new Button("Chats");
         Button friendsBtn = new Button("Add Friend");
         Button settingsBtn = new Button("Settings");
-
-        for (Button btn : new Button[]{chatBtn, friendsBtn, settingsBtn}) {
+        Button profileBtn = new Button("My Profile");
+        Button socialBtn = new Button("Social");
+        for (Button btn : new Button[]{chatBtn, friendsBtn, settingsBtn, profileBtn, socialBtn}) {
             btn.setMaxWidth(Double.MAX_VALUE);
             btn.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-text-fill: #4B2B82; -fx-font-weight: bold;");
+
         }
 
-        sidebar.getChildren().addAll(menuLabel, chatBtn, friendsBtn, settingsBtn);
+        sidebar.getChildren().addAll(menuLabel, chatBtn, friendsBtn, settingsBtn, profileBtn, socialBtn);
         root.setLeft(sidebar);
 
         VBox topBox = new VBox(10);

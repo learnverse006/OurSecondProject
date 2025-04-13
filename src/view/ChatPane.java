@@ -57,7 +57,7 @@ public class ChatPane {
 
         // Socket setup
         try {
-            chatClient.connect("localhost", 1234);
+            chatClient.connect("26.66.135.84", 1234);
             chatClient.send(userId); // gửi tên user đầu tiên để server nhận biết
 
             chatClient.listen(message -> Platform.runLater(() -> {
