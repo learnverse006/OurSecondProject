@@ -20,7 +20,7 @@ public class ChatMainView {
 
         VBox sidebar = new VBox(15);
         sidebar.setPadding(new Insets(20));
-        sidebar.setStyle("-fx-background-color: #4B2B82;");
+        sidebar.setStyle("-fx-background-color: #493D9E;");
         sidebar.setPrefWidth(130);
 
         Label menuLabel = new Label("WHATS APP");
@@ -75,7 +75,7 @@ public class ChatMainView {
             chatHolder.setPrefWidth(700);
 
             ChatListPane chatListPane = new ChatListPane(chatId-> {
-                ChatPane chatPane = new ChatPane(chatId);
+                ChatPane chatPane = new ChatPane(chatId, user.getUserId());
                 chatHolder.setCenter(chatPane.getView());
             });
             chatContainer.getChildren().addAll(chatListPane.getView(), chatHolder);

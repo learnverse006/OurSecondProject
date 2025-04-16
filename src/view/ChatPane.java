@@ -5,25 +5,31 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.NodeOrientation;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
+import javafx.stage.FileChooser;
 import socket.ChatClient;
+import socket.SendFile;
+import socket.SendImage;
 
 import java.time.LocalTime;
+import java.io.*;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+import java.util.List;
 
 public class ChatPane {
     private final BorderPane view;
     private final VBox messagesBox = new VBox(10);
     private final ChatClient chatClient = new ChatClient();
-    private final String userId = "User" + System.currentTimeMillis();
-
-    public ChatPane(int chatId) {
+    private final String userId;
+    // chat pane:
+    public ChatPane(int chatId, int currID) {
         view = new BorderPane();
+        this.userId = String.valueOf(currID);
         view.setStyle("-fx-background-color: #ffffff;");
 
         // Header
@@ -43,17 +49,37 @@ public class ChatPane {
         view.setCenter(scrollPane);
 
         // Footer (input)
+        HBox toolBar = new HBox(10);
+        toolBar.setPadding((new Insets(10)));
+        toolBar.setStyle("-fx-background-color: #4D55CC;");
+        toolBar.setPrefWidth(500);
+        Button sendEmoji = new Button("Emoji");
+        Button sendFile = new Button("Choose File");
+        Button sendGifFile = new Button("GIF");
+        Button sendRecord = new Button("Voice Chat");
+        Button sendImg = new Button("Image");
+        toolBar.getChildren().addAll(sendEmoji, sendFile, sendGifFile, sendRecord, sendImg);
+
+//        view.setBottom(toolBar);
+
         HBox inputBox = new HBox(10);
         inputBox.setPadding(new Insets(10));
         inputBox.setStyle("-fx-background-color: #eeeeee;");
 
         TextField messageField = new TextField();
         messageField.setPromptText("Nhập tin nhắn...");
-        messageField.setPrefWidth(600);
+        messageField.setPrefWidth(560);
+        messagesBox.setFillWidth(true);
+
 
         Button sendButton = new Button("Gửi");
+//        Button sendEmoji = new Button("Emoji");
+//        Button sendFile = new Button("Choose File");
         inputBox.getChildren().addAll(messageField, sendButton);
-        view.setBottom(inputBox);
+
+        VBox chatField = new VBox(3, toolBar, inputBox);
+
+        view.setBottom(chatField);
 
         // Socket setup
         try {
@@ -64,15 +90,80 @@ public class ChatPane {
                 String sender = extractSender(message);
                 String content = extractContent(message);
                 boolean isSender = sender.equals(userId);
-                if (!isSender) {
-                    messagesBox.getChildren().add(createMessageBubble(content, false));
+
+                if (content.startsWith("[FILE]:")) {
+                    String[] parts = util.FileTransfer.parseFileMessage(content);
+                    if (parts.length == 3) {
+                        String fileName = parts[1];
+                        byte[] fileData = util.FileTransfer.decodeBase64File(parts[2]);
+
+//                        boolean isSender = sender.equals(userId);
+                        HBox download = util.FileTransfer.buildDownloadableFile(fileName, fileData, view.getScene().getWindow(), isSender);
+                        messagesBox.getChildren().add(download);
+                    }
+                    return;
+
                 }
+
+
+
+                if (content.startsWith("[IMG]")) {
+                    ImageView imageView = util.FileTransferHandler.receiveImage(content);  // <-- xử lý Base64 sang ảnh
+                    if (imageView != null) {
+                        HBox bubble = util.FileTransferHandler.buildImageBubble(imageView, isSender);
+                        messagesBox.getChildren().add(bubble);
+                    }
+                    return; // Dừng lại, không xử lý như text nữa
+                }
+
+                // Nếu không phải ảnh thì xử lý như text
+                messagesBox.getChildren().add(createMessageBubble(content, isSender));
             }));
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+        sendEmoji.setOnAction(e -> {
+            List<String> emojis = List.of("😄", "😂", "😍", "😎", "🎉", "🔥", "❤️", "👍", "👀");
+            ChoiceDialog<String> dialog = new ChoiceDialog<>(emojis.get(0), emojis);
+            dialog.setTitle("Chọn Emoji");
+            dialog.setHeaderText("Chèn biểu tượng cảm xúc vào tin nhắn");
+            dialog.setContentText("Emoji:");
 
-        // Gửi tin nhắn
+            dialog.showAndWait().ifPresent(selectedEmoji -> {
+                messageField.appendText(selectedEmoji);
+            });
+        });
+
+
+        sendFile.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Chọn file để gửi");
+            fileChooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("Tất cả file", "*.*"),
+                    new FileChooser.ExtensionFilter("Tài liệu", "*.pdf", "*.docx", "*.xlsx", "*.txt")
+            );
+
+            File chosenFile = fileChooser.showOpenDialog(view.getScene().getWindow());
+            if (chosenFile != null) {
+                try {
+                    String msg = util.FileTransfer.buildFileMessage(chosenFile); // gửi dạng [FILE]:...
+                    chatClient.send(msg);
+
+                    // Hiển thị xác nhận đã gửi
+                    Label label = new Label("📄 Đã gửi file: " + chosenFile.getName());
+                    HBox box = new HBox(label);
+                    box.setAlignment(Pos.CENTER_RIGHT);
+                    messagesBox.getChildren().add(box);
+
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+
         sendButton.setOnAction(e -> {
             String text = messageField.getText().trim();
             if (!text.isEmpty()) {
@@ -81,6 +172,39 @@ public class ChatPane {
                 messageField.clear();
             }
         });
+
+
+        sendImg.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Chọn ảnh để gửi");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("Hình ảnh", "*.png", "*.jpg", "*.jpeg", "*.gif")
+            );
+
+            File imageFile = fileChooser.showOpenDialog(sendImg.getScene().getWindow());
+            if (imageFile != null) {
+                try {
+                    FileInputStream fis = new FileInputStream(imageFile);
+                    byte[] imageBytes = fis.readAllBytes();
+                    fis.close();
+
+                    String base64 = Base64.getEncoder().encodeToString(imageBytes);
+                    chatClient.send("[IMG]" + base64); // Gửi ảnh qua socket
+
+                    // Hiển thị ảnh tại máy gửi
+                    javafx.scene.image.ImageView imgView = util.FileTransferHandler.previewImage(imageFile);
+                    HBox bubble = util.FileTransferHandler.buildImageBubble(imgView, true);
+                    messagesBox.getChildren().add(bubble);
+
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+
+        // Gửi tin nhắn
+
     }
 
     private String extractSender(String raw) {
@@ -100,6 +224,7 @@ public class ChatPane {
 
         Label msgLabel = new Label(text);
         msgLabel.setWrapText(true);
+        msgLabel.setFont(Font.font("Segoe UI Emoji", 16));
         msgLabel.setPadding(new Insets(10));
         msgLabel.setMaxWidth(300);
         msgLabel.setStyle("-fx-background-color: " + (isSender ? "#6a00f4; -fx-text-fill: white;" : "#e0e0e0;") + " -fx-background-radius: 10;");

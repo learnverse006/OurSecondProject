@@ -117,4 +117,8 @@ public class UserDAO {
         if (user == null) return false;
         return BCrypt.checkpw(plainPassword, user.getPasswordHash());
     }
+
+//    public static int findUserIDByUserName() {
+//
+//    }
 }

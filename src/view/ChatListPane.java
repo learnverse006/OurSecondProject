@@ -44,10 +44,11 @@ public class ChatListPane {
         });
 
         chatList.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && newVal.intValue() >= 0) {
-                onChatSelected.accept(newVal.intValue());
+            if (newVal != null && newVal.intValue() == 0) {
+                onChatSelected.accept(1);
             }
         });
+
 
         container.getChildren().addAll(title, chatList);
         view.setCenter(container);

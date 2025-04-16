@@ -21,6 +21,7 @@ public class UserProfileDAO {
                 "facebook_link=?, discord_link=?, portfolio_link=?, cover_picture_url=?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setInt(1, userProfile.getUserID());
             stmt.setString(2, userProfile.getFullName());
             stmt.setString(3, userProfile.getJobTitle());
@@ -45,6 +46,7 @@ public class UserProfileDAO {
             stmt.setString(20, userProfile.getPortfolioLink());
             stmt.setString(21, userProfile.getCoverPicture());
             return stmt.executeUpdate() > 0;
+
         }
 //        catch (Exception e) {
 //            System.err.println("Lỗi khi cập nhật thông tin tài khoản");

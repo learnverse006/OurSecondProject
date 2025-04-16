@@ -1,126 +1,87 @@
 package models;
 
-import java.sql.*;
+import java.time.LocalDateTime;
 
 public class Message {
-    private int messageId;
-    private int chatId;
-    private int senderId;
+    private int messageID;
+    private int senderID;
+    private int receiverID;
+    private int chatID;
     private String content;
-    private String messageType;
-    private Timestamp createdAt;
+    private MessageType mst;
+    private LocalDateTime createAt;
 
-    // Constructor, getters, setters
-    public Message(int messageId, int chatId, int senderId, String content, String messageType, Timestamp createdAt) {
-        this.messageId = messageId;
-        this.chatId = chatId;
-        this.senderId = senderId;
+    public Message() {
+
+    }
+
+    public Message(int messageID, int senderID, int receiverID, int chatID, String content, MessageType mst, LocalDateTime createAt) {
+        this.messageID = messageID;
+        this.receiverID = receiverID;
+        this.senderID = senderID;
+        this.chatID = chatID;
         this.content = content;
-        this.messageType = messageType;
-        this.createdAt = createdAt;
+        this.mst = mst;
+        this.createAt = createAt;
+    }
+    public enum MessageType {
+        TEXT,
+        IMAGE,
+        EMOJI,
+        FILE
+    }
+    public void setMessageID(int messageID) {
+        this.messageID = messageID;
+    }
+    public int getMessageID() {
+        return messageID;
     }
 
-    // Getters and setters
-    public int getMessageId() {
-        return messageId;
+    public void setSenderID(int senderID) {
+        this.senderID = senderID;
     }
 
-    public void setMessageId(int messageId) {
-        this.messageId = messageId;
+    public int getSenderID() {
+        return senderID;
     }
 
-    public int getChatId() {
-        return chatId;
+    public void setReceiverID(int receiverID) {
+        this.receiverID = receiverID;
     }
 
-    public void setChatId(int chatId) {
-        this.chatId = chatId;
+    public int getReceiverID() {
+        return receiverID;
     }
 
-    public int getSenderId() {
-        return senderId;
+    public void setChatID(int chatID) {
+         this.chatID = chatID;
     }
 
-    public void setSenderId(int senderId) {
-        this.senderId = senderId;
-    }
-
-    public String getContent() {
-        return content;
+    public int getChatID() {
+        return chatID;
     }
 
     public void setContent(String content) {
         this.content = content;
     }
 
-    public String getMessageType() {
-        return messageType;
+    public String getContent() {
+        return content;
     }
 
-    public void setMessageType(String messageType) {
-        this.messageType = messageType;
+    public void setMessageType(MessageType mst) {
+        this.mst = mst;
     }
 
-    public Timestamp getCreatedAt() {
-        return createdAt;
+    public MessageType getMst() {
+        return mst;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
+    public void setCreateAt(LocalDateTime time) {
+        this.createAt = time;
     }
 
-    // CREATE - Lưu tin nhắn vào cơ sở dữ liệu
-    public boolean save(Connection conn) throws SQLException {
-        String query = "INSERT INTO message (chat_id, sender_id, content, message_type, created_at) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, this.chatId);
-            stmt.setInt(2, this.senderId);
-            stmt.setString(3, this.content);
-            stmt.setString(4, this.messageType);
-            stmt.setTimestamp(5, this.createdAt);
-            return stmt.executeUpdate() > 0;
-        }
-    }
-
-    // UPDATE - Cập nhật tin nhắn
-    public boolean update(Connection conn) throws SQLException {
-        String query = "UPDATE message SET content = ?, message_type = ?, created_at = ? WHERE message_id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, this.content);
-            stmt.setString(2, this.messageType);
-            stmt.setTimestamp(3, this.createdAt);
-            stmt.setInt(4, this.messageId);
-            return stmt.executeUpdate() > 0;
-        }
-    }
-
-    // DELETE - Xóa tin nhắn
-    public boolean delete(Connection conn) throws SQLException {
-        String query = "DELETE FROM message WHERE message_id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, this.messageId);
-            return stmt.executeUpdate() > 0;
-        }
-    }
-
-    // READ - Tìm tin nhắn theo ID
-    public static Message findById(Connection conn, int messageId) throws SQLException {
-        String query = "SELECT * FROM message WHERE message_id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, messageId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return new Message(
-                            rs.getInt("message_id"),
-                            rs.getInt("chat_id"),
-                            rs.getInt("sender_id"),
-                            rs.getString("content"),
-                            rs.getString("message_type"),
-                            rs.getTimestamp("created_at")
-                    );
-                }
-                return null;
-            }
-        }
+    public LocalDateTime getCreateAt() {
+        return createAt;
     }
 }

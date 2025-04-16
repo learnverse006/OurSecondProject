@@ -9,4 +9,5 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import models.User;
 public class FriendView {
+
 }
