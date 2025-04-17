@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 public class Message {
     private int messageID;
     private int senderID;
-    private int receiverID;
+    private Integer receiverID; // Cho phép null
     private int chatID;
     private String content;
     private MessageType mst;
@@ -15,21 +15,23 @@ public class Message {
 
     }
 
-    public Message(int messageID, int senderID, int receiverID, int chatID, String content, MessageType mst, LocalDateTime createAt) {
+    public Message(int messageID, int chatID, int senderID, Integer receiverID, String content, MessageType mst, LocalDateTime createAt) {
         this.messageID = messageID;
-        this.receiverID = receiverID;
-        this.senderID = senderID;
         this.chatID = chatID;
+        this.senderID = senderID;
+        this.receiverID = receiverID;
         this.content = content;
         this.mst = mst;
         this.createAt = createAt;
     }
+
     public enum MessageType {
         TEXT,
         IMAGE,
         EMOJI,
         FILE
     }
+
     public void setMessageID(int messageID) {
         this.messageID = messageID;
     }
@@ -45,16 +47,16 @@ public class Message {
         return senderID;
     }
 
-    public void setReceiverID(int receiverID) {
+    public void setReceiverID(Integer receiverID) {
         this.receiverID = receiverID;
     }
 
-    public int getReceiverID() {
+    public Integer getReceiverID() {
         return receiverID;
     }
 
     public void setChatID(int chatID) {
-         this.chatID = chatID;
+        this.chatID = chatID;
     }
 
     public int getChatID() {

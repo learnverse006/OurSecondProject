@@ -14,10 +14,14 @@ import javafx.stage.FileChooser;
 import socket.ChatClient;
 import socket.SendFile;
 import socket.SendImage;
+import models.Message;
+import models.MessageDAO;
+import models.Message.MessageType;
 
 import java.time.LocalTime;
 import java.io.*;
 import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
 
@@ -80,6 +84,31 @@ public class ChatPane {
         VBox chatField = new VBox(3, toolBar, inputBox);
 
         view.setBottom(chatField);
+        try {
+            List<Message> oldMessages = MessageDAO.getMessageByChatID(chatId);
+            for (Message msg : oldMessages) {
+                boolean isSender = msg.getSenderID() == Integer.parseInt(userId);
+
+                if (msg.getMst() == Message.MessageType.IMAGE && msg.getContent().startsWith("[IMG]")) {
+                    ImageView img = util.FileTransferHandler.receiveImage(msg.getContent());
+                    if (img != null) {
+                        HBox bubble = util.FileTransferHandler.buildImageBubble(img, isSender);
+                        messagesBox.getChildren().add(bubble);
+                    }
+                } else if (msg.getMst() == Message.MessageType.FILE && msg.getContent().startsWith("[FILE]:")) {
+                    String[] parts = util.FileTransfer.parseFileMessage(msg.getContent());
+                    if (parts.length == 3) {
+                        byte[] fileData = util.FileTransfer.decodeBase64File(parts[2]);
+                        HBox fileBubble = util.FileTransfer.buildDownloadableFile(parts[1], fileData, view.getScene().getWindow(), isSender);
+                        messagesBox.getChildren().add(fileBubble);
+                    }
+                } else {
+                    messagesBox.getChildren().add(createMessageBubble(msg.getContent(), isSender));
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
         // Socket setup
         try {
@@ -87,6 +116,33 @@ public class ChatPane {
             chatClient.send(userId); // gửi tên user đầu tiên để server nhận biết
 
             chatClient.listen(message -> Platform.runLater(() -> {
+//                try {
+//                    List<Message> oldMessages = MessageDAO.getMessageByChatID(chatId);
+//                    for (Message msg : oldMessages) {
+//                        boolean isSender = msg.getSenderID() == currID;
+//
+//                        if (msg.getMst() == MessageType.IMAGE && msg.getContent().startsWith("[IMG]")) {
+//                            ImageView imageView = util.FileTransferHandler.receiveImage(msg.getContent());
+//                            if (imageView != null) {
+//                                HBox bubble = util.FileTransferHandler.buildImageBubble(imageView, isSender);
+//                                messagesBox.getChildren().add(bubble);
+//                            }
+//                        } else if (msg.getMst() == MessageType.FILE && msg.getContent().startsWith("[FILE]:")) {
+//                            String[] parts = util.FileTransfer.parseFileMessage(msg.getContent());
+//                            if (parts.length == 3) {
+//                                String fileName = parts[1];
+//                                byte[] fileData = util.FileTransfer.decodeBase64File(parts[2]);
+//                                HBox download = util.FileTransfer.buildDownloadableFile(fileName, fileData, view.getScene().getWindow(), isSender);
+//                                messagesBox.getChildren().add(download);
+//                            }
+//                        } else {
+//                            messagesBox.getChildren().add(createMessageBubble(msg.getContent(), isSender));
+//                        }
+//                    }
+//                } catch (Exception ex) {
+//                    ex.printStackTrace();
+//                }
+
                 String sender = extractSender(message);
                 String content = extractContent(message);
                 boolean isSender = sender.equals(userId);
@@ -157,7 +213,19 @@ public class ChatPane {
                     box.setAlignment(Pos.CENTER_RIGHT);
                     messagesBox.getChildren().add(box);
 
+                    // lưu vào db
+                    Message message = new Message();
+                    message.setChatID(chatId);
+                    message.setSenderID(currID);
+                    message.setReceiverID(0);
+                    message.setContent(msg);
+                    message.setMessageType(MessageType.FILE);
+                    message.setCreateAt(java.time.LocalDateTime.now());
+                    MessageDAO.saveMessage(message);
+
                 } catch (IOException ex) {
+                    ex.printStackTrace();
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
@@ -170,6 +238,19 @@ public class ChatPane {
                 chatClient.send(text);
                 messagesBox.getChildren().add(createMessageBubble(text, true));
                 messageField.clear();
+
+                try {
+                    Message message = new Message();
+                    message.setChatID(chatId);
+                    message.setSenderID(currID);
+                    message.setReceiverID(0);
+                    message.setContent(text);
+                    message.setMessageType(MessageType.TEXT);
+                    message.setCreateAt(java.time.LocalDateTime.now());
+                    MessageDAO.saveMessage(message);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         });
 
@@ -189,14 +270,27 @@ public class ChatPane {
                     fis.close();
 
                     String base64 = Base64.getEncoder().encodeToString(imageBytes);
-                    chatClient.send("[IMG]" + base64); // Gửi ảnh qua socket
+                    String messageToSend = "[IMG]" + base64;
+                    chatClient.send(messageToSend);
 
                     // Hiển thị ảnh tại máy gửi
                     javafx.scene.image.ImageView imgView = util.FileTransferHandler.previewImage(imageFile);
                     HBox bubble = util.FileTransferHandler.buildImageBubble(imgView, true);
                     messagesBox.getChildren().add(bubble);
 
+                    // lưu vào db
+                    Message message = new Message();
+                    message.setChatID(chatId);
+                    message.setSenderID(currID);
+                    message.setReceiverID(0);
+                    message.setContent(messageToSend);
+                    message.setMessageType(MessageType.IMAGE);
+                    message.setCreateAt(java.time.LocalDateTime.now());
+                    MessageDAO.saveMessage(message);
+
                 } catch (IOException ex) {
+                    ex.printStackTrace();
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
