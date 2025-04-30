@@ -2,7 +2,6 @@
   <library name="jbcrypt-0.4">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/../../../../Program Files/Java/jbcrypt-0.4.jar!/" />
-      <root url="jar://$PROJECT_DIR$/../../../../Program Files/Java/mysql-connector-j-9.1.0.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

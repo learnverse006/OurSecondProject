@@ -97,7 +97,7 @@ public class UserDAO {
         return false;
     }
     //
-//     Insert user by default : thêm người dùng với 3 trường dữ liệu chính (username, email, password)
+//     Insert user by default : thêm người dùng với 3 trường dữ liệu chính (user/name, email, password)
     //  Có thể dùng over loading method cũng được
     public static boolean insertUserByDefault(User user){
         String sql = "INSERT INTO user(username, email, password_hash) VALUES (?, ?, ?)";
@@ -116,6 +116,20 @@ public class UserDAO {
         User user = findByUsername(username);
         if (user == null) return false;
         return BCrypt.checkpw(plainPassword, user.getPasswordHash());
+    }
+
+    public static String getUsernameById(int userId) {
+        String sql = "SELECT username FROM users WHERE user_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("username");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "Unknown";
     }
 
 //    public static int findUserIDByUserName() {

@@ -99,6 +99,7 @@ public class FileTransferHandler {
         return bubble;
     }
 
+
     public static ImageView previewImage(File file) {
         try {
             FileInputStream fis = new FileInputStream(file);

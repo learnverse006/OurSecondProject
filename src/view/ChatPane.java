@@ -17,7 +17,7 @@ import socket.SendImage;
 import models.Message;
 import models.MessageDAO;
 import models.Message.MessageType;
-
+import util.AESUtil;
 import java.time.LocalTime;
 import java.io.*;
 import java.time.format.DateTimeFormatter;
@@ -234,6 +234,12 @@ public class ChatPane {
 
         sendButton.setOnAction(e -> {
             String text = messageField.getText().trim();
+//            try {
+//                String crypt = AESUtil.encrypt(text, "1234567890123456");
+//            } catch (Exception ex) {
+//                throw new RuntimeException(ex);
+//            }
+
             if (!text.isEmpty()) {
                 chatClient.send(text);
                 messagesBox.getChildren().add(createMessageBubble(text, true));
@@ -244,6 +250,7 @@ public class ChatPane {
                     message.setChatID(chatId);
                     message.setSenderID(currID);
                     message.setReceiverID(0);
+//                    message.setContent(AESUtil.encrypt(text, "1234123412341234"));
                     message.setContent(text);
                     message.setMessageType(MessageType.TEXT);
                     message.setCreateAt(java.time.LocalDateTime.now());
@@ -287,7 +294,6 @@ public class ChatPane {
                     message.setMessageType(MessageType.IMAGE);
                     message.setCreateAt(java.time.LocalDateTime.now());
                     MessageDAO.saveMessage(message);
-
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 } catch (Exception ex) {
