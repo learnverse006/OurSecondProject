@@ -29,6 +29,14 @@ public class MessageDAO {
         }
     }
 
+    public static void deleteMessage(Message message) throws SQLException {
+        String sql = "DELETE FROM message WHERE ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, message.getMessageID());
+            ResultSet rs = stmt.executeQuery();
+        }
+    }
+
     public static List<Message> getMessageByChatID(int chatID) throws SQLException {
         String sql = "SELECT * FROM message WHERE chat_id = ? ORDER BY created_at ASC";
         List<Message> messages = new ArrayList<>();

@@ -5,9 +5,9 @@
 
 <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <VBox layoutY="-1.0" prefHeight="400.0" prefWidth="132.0">
+      <VBox layoutY="-1.0" prefHeight="400.0" prefWidth="172.0">
          <children>
-            <Circle fill="DODGERBLUE" radius="62.0" stroke="BLACK" strokeType="INSIDE" />
+            <Circle fill="DODGERBLUE" radius="90.0" stroke="BLACK" strokeType="INSIDE" />
          </children>
       </VBox>
    </children>

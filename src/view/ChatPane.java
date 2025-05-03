@@ -6,22 +6,18 @@ import javafx.geometry.Insets;
 import javafx.geometry.NodeOrientation;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import socket.ChatClient;
-import socket.SendFile;
-import socket.SendImage;
 import models.Message;
 import models.MessageDAO;
 import models.Message.MessageType;
-import util.AESUtil;
+
 import java.time.LocalTime;
 import java.io.*;
 import java.time.format.DateTimeFormatter;
-import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
 
@@ -62,7 +58,8 @@ public class ChatPane {
         Button sendGifFile = new Button("GIF");
         Button sendRecord = new Button("Voice Chat");
         Button sendImg = new Button("Image");
-        toolBar.getChildren().addAll(sendEmoji, sendFile, sendGifFile, sendRecord, sendImg);
+        Button sendVoice = new Button("Send voice");
+        toolBar.getChildren().addAll(sendEmoji, sendFile, sendGifFile, sendRecord, sendImg, sendVoice);
 
 //        view.setBottom(toolBar);
 
@@ -116,32 +113,6 @@ public class ChatPane {
             chatClient.send(userId); // gửi tên user đầu tiên để server nhận biết
 
             chatClient.listen(message -> Platform.runLater(() -> {
-//                try {
-//                    List<Message> oldMessages = MessageDAO.getMessageByChatID(chatId);
-//                    for (Message msg : oldMessages) {
-//                        boolean isSender = msg.getSenderID() == currID;
-//
-//                        if (msg.getMst() == MessageType.IMAGE && msg.getContent().startsWith("[IMG]")) {
-//                            ImageView imageView = util.FileTransferHandler.receiveImage(msg.getContent());
-//                            if (imageView != null) {
-//                                HBox bubble = util.FileTransferHandler.buildImageBubble(imageView, isSender);
-//                                messagesBox.getChildren().add(bubble);
-//                            }
-//                        } else if (msg.getMst() == MessageType.FILE && msg.getContent().startsWith("[FILE]:")) {
-//                            String[] parts = util.FileTransfer.parseFileMessage(msg.getContent());
-//                            if (parts.length == 3) {
-//                                String fileName = parts[1];
-//                                byte[] fileData = util.FileTransfer.decodeBase64File(parts[2]);
-//                                HBox download = util.FileTransfer.buildDownloadableFile(fileName, fileData, view.getScene().getWindow(), isSender);
-//                                messagesBox.getChildren().add(download);
-//                            }
-//                        } else {
-//                            messagesBox.getChildren().add(createMessageBubble(msg.getContent(), isSender));
-//                        }
-//                    }
-//                } catch (Exception ex) {
-//                    ex.printStackTrace();
-//                }
 
                 String sender = extractSender(message);
                 String content = extractContent(message);
@@ -160,8 +131,6 @@ public class ChatPane {
                     return;
 
                 }
-
-
 
                 if (content.startsWith("[IMG]")) {
                     ImageView imageView = util.FileTransferHandler.receiveImage(content);  // <-- xử lý Base64 sang ảnh

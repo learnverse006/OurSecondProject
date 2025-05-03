@@ -2,6 +2,7 @@ package models;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.awt.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.ResultSet;
@@ -119,7 +120,7 @@ public class UserDAO {
     }
 
     public static String getUsernameById(int userId) {
-        String sql = "SELECT username FROM users WHERE user_id = ?";
+        String sql = "SELECT username FROM user WHERE user_id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             ResultSet rs = stmt.executeQuery();
@@ -131,6 +132,21 @@ public class UserDAO {
         }
         return "Unknown";
     }
+
+    public static String getPictureByUserID(int userID) {
+        String sql = "SELECT profile_picture FROM user WHERE user_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userID);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("profile_picture");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "Default Picture";
+    }
+
 
 //    public static int findUserIDByUserName() {
 //
