@@ -10,6 +10,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
+import javafx.stage.Window;
 import socket.ChatClient;
 import models.Message;
 import models.MessageDAO;
@@ -26,11 +27,20 @@ public class ChatPane {
     private final VBox messagesBox = new VBox(10);
     private final ChatClient chatClient = new ChatClient();
     private final String userId;
+    private Window window;
+
     // chat pane:
     public ChatPane(int chatId, int currID) {
         view = new BorderPane();
         this.userId = String.valueOf(currID);
         view.setStyle("-fx-background-color: #ffffff;");
+
+        // Add scene listener to update window reference
+        view.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                window = newScene.getWindow();
+            }
+        });
 
         // Header
         Label headerLabel = new Label("GROUP 1");
@@ -81,27 +91,38 @@ public class ChatPane {
         VBox chatField = new VBox(3, toolBar, inputBox);
 
         view.setBottom(chatField);
+        // Load history and scroll to bottom
         try {
             List<Message> oldMessages = MessageDAO.getMessageByChatID(chatId);
-            for (Message msg : oldMessages) {
-                boolean isSender = msg.getSenderID() == Integer.parseInt(userId);
+            Runnable loadHistory = () -> {
+                for (Message msg : oldMessages) {
+                    boolean isSender = msg.getSenderID() == Integer.parseInt(userId);
 
-                if (msg.getMst() == Message.MessageType.IMAGE && msg.getContent().startsWith("[IMG]")) {
-                    ImageView img = util.FileTransferHandler.receiveImage(msg.getContent());
-                    if (img != null) {
-                        HBox bubble = util.FileTransferHandler.buildImageBubble(img, isSender);
-                        messagesBox.getChildren().add(bubble);
+                    if (msg.getMst() == Message.MessageType.IMAGE && msg.getContent().startsWith("[IMG]")) {
+                        ImageView img = util.FileTransferHandler.receiveImage(msg.getContent());
+                        if (img != null) {
+                            HBox bubble = util.FileTransferHandler.buildImageBubble(img, isSender);
+                            messagesBox.getChildren().add(bubble);
+                        }
+                    } else if (msg.getMst() == Message.MessageType.FILE && msg.getContent().startsWith("[FILE]:")) {
+                        String[] parts = util.FileTransfer.parseFileMessage(msg.getContent());
+                        if (parts.length == 3) {
+                            byte[] fileData = util.FileTransfer.decodeBase64File(parts[2]);
+                            if (window != null) {
+                                HBox fileBubble = util.FileTransfer.buildDownloadableFile(parts[1], fileData, window, isSender);
+                                messagesBox.getChildren().add(fileBubble);
+                            }
+                        }
+                    } else {
+                        messagesBox.getChildren().add(createMessageBubble(msg.getContent(), isSender));
                     }
-                } else if (msg.getMst() == Message.MessageType.FILE && msg.getContent().startsWith("[FILE]:")) {
-                    String[] parts = util.FileTransfer.parseFileMessage(msg.getContent());
-                    if (parts.length == 3) {
-                        byte[] fileData = util.FileTransfer.decodeBase64File(parts[2]);
-                        HBox fileBubble = util.FileTransfer.buildDownloadableFile(parts[1], fileData, view.getScene().getWindow(), isSender);
-                        messagesBox.getChildren().add(fileBubble);
-                    }
-                } else {
-                    messagesBox.getChildren().add(createMessageBubble(msg.getContent(), isSender));
                 }
+                scrollToBottom();
+            };
+            if (window == null) {
+                Platform.runLater(loadHistory);
+            } else {
+                loadHistory.run();
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -113,36 +134,39 @@ public class ChatPane {
             chatClient.send(userId); // gửi tên user đầu tiên để server nhận biết
 
             chatClient.listen(message -> Platform.runLater(() -> {
-
                 String sender = extractSender(message);
                 String content = extractContent(message);
                 boolean isSender = sender.equals(userId);
+
+                // Nếu tin nhắn đã có trong UI thì bỏ qua
+                if (isDuplicateMessage(content)) {
+                    return;
+                }
 
                 if (content.startsWith("[FILE]:")) {
                     String[] parts = util.FileTransfer.parseFileMessage(content);
                     if (parts.length == 3) {
                         String fileName = parts[1];
                         byte[] fileData = util.FileTransfer.decodeBase64File(parts[2]);
-
-//                        boolean isSender = sender.equals(userId);
                         HBox download = util.FileTransfer.buildDownloadableFile(fileName, fileData, view.getScene().getWindow(), isSender);
                         messagesBox.getChildren().add(download);
+                        scrollToBottom();
                     }
                     return;
-
                 }
 
                 if (content.startsWith("[IMG]")) {
-                    ImageView imageView = util.FileTransferHandler.receiveImage(content);  // <-- xử lý Base64 sang ảnh
+                    ImageView imageView = util.FileTransferHandler.receiveImage(content);
                     if (imageView != null) {
                         HBox bubble = util.FileTransferHandler.buildImageBubble(imageView, isSender);
                         messagesBox.getChildren().add(bubble);
+                        scrollToBottom();
                     }
-                    return; // Dừng lại, không xử lý như text nữa
+                    return;
                 }
 
-                // Nếu không phải ảnh thì xử lý như text
                 messagesBox.getChildren().add(createMessageBubble(content, isSender));
+                scrollToBottom();
             }));
 
 
@@ -163,6 +187,9 @@ public class ChatPane {
 
 
         sendFile.setOnAction(e -> {
+            if (window == null) {
+                window = view.getScene().getWindow();
+            }
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Chọn file để gửi");
             fileChooser.getExtensionFilters().addAll(
@@ -170,7 +197,7 @@ public class ChatPane {
                     new FileChooser.ExtensionFilter("Tài liệu", "*.pdf", "*.docx", "*.xlsx", "*.txt")
             );
 
-            File chosenFile = fileChooser.showOpenDialog(view.getScene().getWindow());
+            File chosenFile = fileChooser.showOpenDialog(window);
             if (chosenFile != null) {
                 try {
                     String msg = util.FileTransfer.buildFileMessage(chosenFile); // gửi dạng [FILE]:...
@@ -181,6 +208,7 @@ public class ChatPane {
                     HBox box = new HBox(label);
                     box.setAlignment(Pos.CENTER_RIGHT);
                     messagesBox.getChildren().add(box);
+                    scrollToBottom();
 
                     // lưu vào db
                     Message message = new Message();
@@ -212,6 +240,7 @@ public class ChatPane {
             if (!text.isEmpty()) {
                 chatClient.send(text);
                 messagesBox.getChildren().add(createMessageBubble(text, true));
+                scrollToBottom();
                 messageField.clear();
 
                 try {
@@ -253,6 +282,7 @@ public class ChatPane {
                     javafx.scene.image.ImageView imgView = util.FileTransferHandler.previewImage(imageFile);
                     HBox bubble = util.FileTransferHandler.buildImageBubble(imgView, true);
                     messagesBox.getChildren().add(bubble);
+                    scrollToBottom();
 
                     // lưu vào db
                     Message message = new Message();
@@ -270,7 +300,46 @@ public class ChatPane {
                 }
             }
         });
-
+//        sendRecord.setOnAction(e -> {
+//            new Thread(() -> {
+//                try {
+//                    LibVosk.setLogLevel(0);
+//                    Model model = new Model("models/vosk-model-small-vi-0.22"); // Đường dẫn tới model tiếng Việt
+//                    Recognizer recognizer = new Recognizer(model, 16000.0f);
+//
+//                    AudioFormat format = new AudioFormat(16000, 16, 1, true, false);
+//                    DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
+//                    TargetDataLine microphone = (TargetDataLine) AudioSystem.getLine(info);
+//                    microphone.open(format);
+//                    microphone.start();
+//
+//                    byte[] buffer = new byte[4096];
+//                    int bytesRead;
+//                    StringBuilder resultText = new StringBuilder();
+//
+//                    long end = System.currentTimeMillis() + 8000;
+//                    while (System.currentTimeMillis() < end) {
+//                        bytesRead = microphone.read(buffer, 0, buffer.length);
+//                        if (recognizer.acceptWaveForm(buffer, bytesRead)) {
+//                            String result = recognizer.getResult();
+//                            // Lấy text từ JSON kết quả
+//                            String text = result.replaceAll(".*\\\"text\\\":\\\"(.*?)\\\".*", "$1");
+//                            resultText.append(text).append(" ");
+//                        }
+//                    }
+//                    microphone.stop();
+//                    microphone.close();
+//                    recognizer.close();
+//                    model.close();
+//
+//                    // Đưa text vào messageField
+//                    Platform.runLater(() -> messageField.setText(resultText.toString().trim()));
+//
+//                } catch (Exception ex) {
+//                    ex.printStackTrace();
+//                }
+//            }).start();
+//        });
 
         // Gửi tin nhắn
 
@@ -311,7 +380,35 @@ public class ChatPane {
         return bubble;
     }
 
+    private void scrollToBottom() {
+        Platform.runLater(() -> {
+            ScrollPane scrollPane = (ScrollPane) view.getCenter();
+            if (scrollPane != null) {
+                scrollPane.setVvalue(1.0);
+                scrollPane.requestLayout();
+            }
+        });
+    }
+
     public BorderPane getView() {
         return view;
+    }
+
+    // Hàm kiểm tra tin nhắn đã tồn tại trong UI chưa (dựa trên nội dung)
+    private boolean isDuplicateMessage(String content) {
+        for (javafx.scene.Node node : messagesBox.getChildren()) {
+            if (node instanceof HBox) {
+                HBox hbox = (HBox) node;
+                for (javafx.scene.Node child : hbox.getChildren()) {
+                    if (child instanceof Label) {
+                        Label label = (Label) child;
+                        if (label.getText() != null && label.getText().contains(content)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

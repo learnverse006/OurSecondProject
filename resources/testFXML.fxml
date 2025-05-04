@@ -7,7 +7,7 @@
    <children>
       <VBox layoutY="-1.0" prefHeight="400.0" prefWidth="172.0">
          <children>
-            <Circle fill="DODGERBLUE" radius="90.0" stroke="BLACK" strokeType="INSIDE" />
+            <Circle fill="#ffa11f" radius="90.0" stroke="BLACK" strokeType="INSIDE" />
          </children>
       </VBox>
    </children>

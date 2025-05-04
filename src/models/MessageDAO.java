@@ -22,7 +22,13 @@ public class MessageDAO {
                 stmt.setNull(3, Types.INTEGER);
             }
             stmt.setString(4, message.getContent());
-            stmt.setString(5, message.getMst().name());
+            String typeChar = switch (message.getMst()) {
+                case TEXT -> "T";
+                case IMAGE -> "I";
+                case EMOJI -> "E";
+                case FILE -> "F";
+            };
+            stmt.setString(5, typeChar);
             stmt.setTimestamp(6, Timestamp.valueOf(message.getCreateAt()));
             System.out.println("[DB] Đang lưu tin nhắn: " + message.getContent());
             stmt.executeUpdate();
@@ -46,13 +52,20 @@ public class MessageDAO {
 
             while (rs.next()) {
                 Integer receiverId = rs.getObject("receiver_id") != null ? rs.getInt("receiver_id") : null;
+                MessageType type = switch (rs.getString("message_type")) {
+                    case "T" -> MessageType.TEXT;
+                    case "I" -> MessageType.IMAGE;
+                    case "E" -> MessageType.EMOJI;
+                    case "F" -> MessageType.FILE;
+                    default -> MessageType.TEXT;
+                };
                 Message msg = new Message(
                         rs.getInt("message_id"),
                         rs.getInt("chat_id"),
                         rs.getInt("sender_id"),
                         receiverId,
                         rs.getString("content"),
-                        MessageType.valueOf(rs.getString("message_type")),
+                        type,
                         rs.getTimestamp("created_at").toLocalDateTime()
                 );
                 messages.add(msg);

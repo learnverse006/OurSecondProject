@@ -26,7 +26,6 @@ public class ChatMainView {
         Label menuLabel = new Label("WHATS APP");
         menuLabel.setFont(Font.font("Roboto", FontWeight.BOLD, 15));
         menuLabel.setStyle("-fx-text-fill: white;");
-
         // Set Button for left bar
         Button chatBtn = new Button("Chats");
         Button friendsBtn = new Button("Add Friend");
