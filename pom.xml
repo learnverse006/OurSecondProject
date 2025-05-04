@@ -18,11 +18,11 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.alphacephei/vosk -->
-        <dependency>
-            <groupId>com.alphacephei</groupId>
-            <artifactId>vosk</artifactId>
-            <version>0.3.45</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.alphacephei</groupId>-->
+<!--            <artifactId>vosk</artifactId>-->
+<!--            <version>0.3.45</version>-->
+<!--        </dependency>-->
 <!--        <dependency>-->
 <!--            <groupId>com.github.alphacep</groupId>-->
 <!--            <artifactId>vosk-api</artifactId>-->
@@ -37,12 +37,12 @@
 <!--        </dependency>-->
     </dependencies>
 
-    <repositories>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
+<!--    <repositories>-->
+<!--        <repository>-->
+<!--            <id>jitpack.io</id>-->
+<!--            <url>https://jitpack.io</url>-->
+<!--        </repository>-->
+<!--    </repositories>-->
 
     <properties>
         <maven.compiler.source>22</maven.compiler.source>
