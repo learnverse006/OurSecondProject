@@ -4,7 +4,10 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
-<ScrollPane prefHeight="483.0" prefWidth="536.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1">
+<ScrollPane
+        fx:controller="controller.ProfileEditController"
+        prefHeight="483.0" prefWidth="536.0"
+            xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1">
    <content>
       <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="534.0" prefWidth="522.0">
          <children>
@@ -13,12 +16,12 @@
                   <Image url="@../Image/activeSlide.png" />
                </image>
             </ImageView>
-            <ImageView fx:id="avatarImageView" fitHeight="120.0" fitWidth="120.0" layoutX="26.0" layoutY="168.0" pickOnBounds="true" preserveRatio="false">
+            <ImageView fx:id="avatarImageView" fitHeight="120.0" fitWidth="120.0" layoutX="26.0" layoutY="168.0" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@../Image/DefaultAvatar.jpg" />
                </image>
             </ImageView>
-            <Button id="chooseAvatarBtn" layoutX="109.0" layoutY="254.0" mnemonicParsing="false" text="Edit" />
+            <Button fx:id="chooseAvatarBtn" layoutX="109.0" layoutY="254.0" mnemonicParsing="false" text="Edit" />
          </children>
       </AnchorPane>
    </content>

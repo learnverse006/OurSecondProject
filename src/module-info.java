@@ -10,4 +10,6 @@ module ChatApplication {
     exports view;
     opens app to javafx.graphics;
     exports app;
+    exports controller;
+    opens controller to javafx.fxml;
 }
