@@ -2,7 +2,7 @@
 package socket;
 
 import models.Message;
-import models.MessageDAO;
+import dao.MessageDAO;
 
 import java.io.*;
 import java.net.Socket;

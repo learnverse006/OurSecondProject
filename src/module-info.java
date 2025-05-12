@@ -6,6 +6,7 @@ module ChatApplication {
     requires java.sql;
     requires jbcrypt;
     requires java.desktop;
+    requires static lombok;
     opens view to javafx.graphics;
     exports view;
     opens app to javafx.graphics;

@@ -13,7 +13,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import socket.ChatClient;
 import models.Message;
-import models.MessageDAO;
+import dao.MessageDAO;
 import models.Message.MessageType;
 
 import java.time.LocalTime;

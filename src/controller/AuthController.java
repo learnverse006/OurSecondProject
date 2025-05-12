@@ -1,6 +1,6 @@
 package controller;
 
-import models.UserDAO;
+import dao.UserDAO;
 import models.User;
 import org.mindrot.jbcrypt.BCrypt;
 import util.AESUtil;
@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Optional;
 
-import static models.UserDAO.REMEMBER_FILE;
+import static dao.UserDAO.REMEMBER_FILE;
 
 public class AuthController {
 
