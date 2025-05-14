@@ -4,7 +4,7 @@ module ChatApplication {
     requires javafx.graphics;
     requires java.security.jgss;
     requires java.sql;
-    requires jbcrypt;
+    requires jBCrypt;
     requires java.desktop;
     requires static lombok;
     requires mysql.connector.j;

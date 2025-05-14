@@ -1,8 +1,8 @@
-// File: socket/ChatClient.java
 package socket;
 
 import models.entity.Message;
-import dao.MessageDAO;
+import models.enums.MessageType;
+import repository.MessageRepository;
 
 import java.io.*;
 import java.net.Socket;
@@ -71,13 +71,13 @@ public class ChatClient {
         }
     }
 
-    public void disconnect() {
-    }
+    public void disconnect() {}
 
     public static class ChatManager {
         private final ChatClient chatClient;
         private final int userId;
         private final int chatId;
+        private final MessageRepository messageRepo = new MessageRepository();
         private Consumer<Message> onMessageReceived;
         private Consumer<Exception> onError;
 
@@ -106,7 +106,7 @@ public class ChatClient {
         }
 
         public void loadHistory() throws Exception {
-            List<Message> messages = MessageDAO.getMessageByChatID(chatId);
+            List<Message> messages = messageRepo.getMessageByChatID(chatId);
             for (Message msg : messages) {
                 if (onMessageReceived != null) {
                     onMessageReceived.accept(msg);
@@ -114,16 +114,16 @@ public class ChatClient {
             }
         }
 
-        public void sendMessage(String content, Message.MessageType type) throws Exception {
+        public void sendMessage(String content, MessageType type) throws Exception {
             Message message = new Message();
             message.setChatID(chatId);
             message.setSenderID(userId);
             message.setReceiverID(0);
             message.setContent(content);
-            message.setMessageType(type);
+            message.setMst(type);
             message.setCreateAt(java.time.LocalDateTime.now());
 
-            MessageDAO.saveMessage(message);
+            messageRepo.saveMessage(message);
             chatClient.send(content);
         }
 
@@ -136,8 +136,7 @@ public class ChatClient {
         }
 
         private Message parseMessage(String rawMessage) {
-            // Parse message from socket format to Message object
-            // Implementation depends on your message format
+            // TODO: Implement parse logic
             return null;
         }
 
