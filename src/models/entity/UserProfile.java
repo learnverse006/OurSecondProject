@@ -1,14 +1,19 @@
-package models;
+package models.entity;
 
 
+import jakarta.persistence.*;
 import lombok.*;
 
+@Entity
+@Table(name = "user_profiles")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
 public class UserProfile {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int userID;
     private String fullName;
     private String jobTitle;

@@ -1,7 +1,7 @@
 package dao;
 
-import models.DatabaseConnection;
-import models.User;
+import models.entity.DatabaseConnection;
+import models.entity.User;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;

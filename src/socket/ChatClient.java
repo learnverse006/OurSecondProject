@@ -1,7 +1,7 @@
 // File: socket/ChatClient.java
 package socket;
 
-import models.Message;
+import models.entity.Message;
 import dao.MessageDAO;
 
 import java.io.*;

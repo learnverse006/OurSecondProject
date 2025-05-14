@@ -1,14 +1,14 @@
 package dao;
 
-import models.DatabaseConnection;
-import models.UserProfile;
+import models.entity.DatabaseConnection;
+import models.entity.UserProfile;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.PreparedStatement;
 
-//import models.UserProfile;
+//import models.entity.UserProfile;
 public class UserProfileDAO {
     private static final Connection conn = DatabaseConnection.getConnection();
 

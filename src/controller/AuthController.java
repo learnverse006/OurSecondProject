@@ -1,7 +1,7 @@
 package controller;
 
 import dao.UserDAO;
-import models.User;
+import models.entity.User;
 import org.mindrot.jbcrypt.BCrypt;
 import util.AESUtil;
 

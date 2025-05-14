@@ -1,8 +1,8 @@
 package dao;
 
-import models.DatabaseConnection;
-import models.Message;
-import models.Message.MessageType;
+import models.entity.DatabaseConnection;
+import models.entity.Message;
+import models.entity.Message.MessageType;
 
 import java.sql.*;
 import java.util.ArrayList;

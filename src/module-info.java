@@ -7,6 +7,9 @@ module ChatApplication {
     requires jbcrypt;
     requires java.desktop;
     requires static lombok;
+    requires mysql.connector.j;
+    requires org.hibernate.orm.core;
+    requires jakarta.persistence;
     opens view to javafx.graphics;
     exports view;
     opens app to javafx.graphics;

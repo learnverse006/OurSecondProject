@@ -9,7 +9,7 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-import models.User;
+import models.entity.User;
 
 public class ChatMainView {
     public static Scene createScene(Stage stage, User user) {

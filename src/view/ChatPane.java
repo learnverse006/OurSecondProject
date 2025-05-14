@@ -12,9 +12,9 @@ import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import socket.ChatClient;
-import models.Message;
+import models.entity.Message;
 import dao.MessageDAO;
-import models.Message.MessageType;
+import models.entity.Message.MessageType;
 
 import java.time.LocalTime;
 import java.io.*;

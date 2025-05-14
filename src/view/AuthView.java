@@ -14,7 +14,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-import models.User;
+import models.entity.User;
 
 public class AuthView {
     public static Scene createScene(Stage primaryStage) {
