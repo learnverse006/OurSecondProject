@@ -7,6 +7,11 @@ import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 
 import java.io.File;
+import models.UserProfileDAO;
+import models.UserProfile;
+import models.UserDAO;
+import models.User;
+
 public class ProfileEditController {
     @FXML
     private ImageView avatarImageView;
@@ -14,6 +19,10 @@ public class ProfileEditController {
     private ImageView coverImageView;
     @FXML
     private Button chooseAvatarBtn;
+    @FXML
+    private Button chooseCoverBtn;
+    @FXML
+    private Button saveBtn;
     @FXML
     public void initialize() {
 
@@ -49,8 +58,13 @@ public class ProfileEditController {
         avatarImageView.setClip(clip);
 
         chooseAvatarBtn.setOnAction(e -> chooseAvatar());
-    }
+        chooseCoverBtn.setOnAction(e -> chooseCoverPicture());
 
+    }
+    @FXML
+    public void inti() {
+
+    }
     public void chooseAvatar() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Chọn ảnh đại diện");
@@ -65,6 +79,23 @@ public class ProfileEditController {
             Circle clip = new Circle(radius, radius, radius);
             avatarImageView.setClip(clip);
         }
+    }
+
+    public void chooseCoverPicture() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Chọn ảnh nền cho trang cá nhân của bạn");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif")
+
+        );
+        File file = fileChooser.showOpenDialog(coverImageView.getScene().getWindow());
+        if(file != null) {
+            coverImageView.setImage(new Image(file.toURI().toString()));
+
+        }
+    }
+    public void submitQuery() {
+        
     }
 
 
