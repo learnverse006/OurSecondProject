@@ -28,7 +28,7 @@ public class EmailService {
         // -------------------- TẠO SESSION SMTP --------------------
         // Session giữ thông tin cấu hình + xác thực + kết nối SMTP
         Session session = Session.getInstance(props, new Authenticator() {
-            // Xác thực bằng email + app password
+            // Xác thực bằng email + main.java.app password
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(fromEmail, appPassword);
             }

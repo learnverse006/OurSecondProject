@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane fitToHeight="true" fitToWidth="true" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.ProfileEditController">
+    <content>
+        <VBox alignment="TOP_CENTER" fillWidth="true" spacing="18" style="-fx-background-color: white;">
+            <!-- Cover + Avatar Facebook style -->
+            <StackPane maxHeight="260" maxWidth="900" minHeight="260" minWidth="700" prefHeight="260" prefWidth="900">
+                <!-- Cover Image -->
+                <ImageView fx:id="coverImageView" fitHeight="264.0" fitWidth="900.0" preserveRatio="false" />
+                <!-- Avatar và nút Edit nằm trong AnchorPane để kéo thả tự do -->
+                <AnchorPane prefHeight="206.0" prefWidth="900">
+                    <ImageView fx:id="avatarImageView" fitHeight="140.0" fitWidth="140.0" layoutX="155.0" layoutY="120.0" preserveRatio="true" style="-fx-effect: dropshadow(gaussian, gray, 10, 0.5, 0, 0); -fx-background-radius: 70;" />
+                    <Button fx:id="chooseAvatarBtn" layoutX="231.0" layoutY="214.0" style="-fx-background-color: rgba(0,0,0,0.5); -fx-text-fill: white;" text="Edit" />
+                   <!-- Nút đổi ảnh bìa -->
+                   <Button fx:id="chooseCoverBtn" layoutX="790.0" layoutY="214.0" style="-fx-background-color: rgba(0,0,0,0.5); -fx-text-fill: white; margin: 10 10 0 0;" text="Edit Cover" />
+                </AnchorPane>
+            </StackPane>
+            <!-- Thông tin cá nhân -->
+            <GridPane alignment="CENTER" hgap="16" vgap="12">
+                <Label text="Full name" GridPane.columnIndex="1" />
+                <TextField GridPane.columnIndex="2" />
+                <Label text="Facebook" GridPane.columnIndex="3" />
+                <TextField GridPane.columnIndex="4" />
+
+                <Label text="Job" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <TextField GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                <Label text="Exp..." GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                <TextField GridPane.columnIndex="4" GridPane.rowIndex="1" />
+
+                <Label text="Location" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <TextField GridPane.columnIndex="2" GridPane.columnSpan="3" GridPane.rowIndex="2" />
+                <columnConstraints>
+                    <ColumnConstraints />
+                    <ColumnConstraints />
+                    <ColumnConstraints />
+                    <ColumnConstraints />
+               <ColumnConstraints />
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints />
+                    <RowConstraints />
+                    <RowConstraints />
+                </rowConstraints>
+            </GridPane>
+            <HBox alignment="CENTER_RIGHT" prefHeight="74.0" prefWidth="900.0" spacing="10">
+                <Button fx:id="saveBtn" text="Save" />
+            </HBox>
+        </VBox>
+    </content>
+</ScrollPane>
