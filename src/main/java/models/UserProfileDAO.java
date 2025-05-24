@@ -11,15 +11,15 @@ public class UserProfileDAO {
 
     // If userID đã tồn tại -> Update, xử lí try-catch
     public boolean updateProfile(UserProfile userProfile) throws SQLException{
-        String sql = "INSERT INTO user_profile (user_id, full_name, job_title, bio, location, experience, website, " +
-                "facebook_link, discord_link, portfolio_link, cover_picture_url) " +
+        String sql = "INSERT INTO user_profile (user_id, full_name, job_title, bio, location, exp, website, " +
+                "facebook_link, discord_link, portfolio_link, cover_picture) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-                "ON DUPLICATE KEY UPDATE full_name=?, job_title=?, bio=?, location=?, experience=?, website=?, " +
-                "facebook_link=?, discord_link=?, portfolio_link=?, cover_picture_url=?";
+                "ON DUPLICATE KEY UPDATE full_name=?, job_title=?, bio=?, location=?, exp=?, website=?, " +
+                "facebook_link=?, discord_link=?, portfolio_link=?, cover_picture=?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setInt(1, userProfile.getUserID());
+            stmt.setInt(1, userProfile.getUserId());
             stmt.setString(2, userProfile.getFullName());
             stmt.setString(3, userProfile.getJobTitle());
             stmt.setString(4, userProfile.getBio());
@@ -68,12 +68,12 @@ public class UserProfileDAO {
                         rs.getString("job_title"),
                         rs.getString("bio"),
                         rs.getString("location"),
-                        rs.getString("experience"),
+                        rs.getString("exp"),
                         rs.getString("website"),
                         rs.getString("facebook_link"),
                         rs.getString("discord_link"),
                         rs.getString("portfolio_link"),
-                        rs.getString("cover_picture_url")
+                        rs.getString("cover_picture")
                 );
             }
         }

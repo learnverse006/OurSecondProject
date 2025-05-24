@@ -1,6 +1,7 @@
 // File: main.java.view/ChatMainView.java
 package view;
 
+import controller.ProfileEditController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -86,11 +87,10 @@ public class ChatMainView {
 
         settingsBtn.setOnAction(e -> {
             try {
-                Parent profileEditPane = FXMLLoader.load(ChatMainView.class.getResource("/fxml/ProfileEditPane.fxml"));
-                if (profileEditPane instanceof Region region) {
-                    region.prefWidthProperty().bind(mainContent.widthProperty());
-                    region.prefHeightProperty().bind(mainContent.heightProperty());
-                }
+                FXMLLoader loader = new FXMLLoader(ChatMainView.class.getResource("/fxml/ProfileEditPane.fxml"));
+                Parent profileEditPane = loader.load();
+                ProfileEditController controller = loader.getController();
+                controller.setUserId(user.getUserId());
                 mainContent.setCenter(profileEditPane);
             } catch (Exception ex) {
                 ex.printStackTrace();
