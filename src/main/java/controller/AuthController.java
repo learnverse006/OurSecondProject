@@ -20,7 +20,25 @@ public class AuthController {
         return user != null && BCrypt.checkpw(password, user.getPasswordHash());
     }
     public static User LoginUser(String username, String password) {
-        return UserDAO.findByUsername(username);
+        User user =  UserDAO.findByUsername(username);
+        if (user != null){
+            try{
+                UserProfileDAO dao = new UserProfileDAO();
+                UserProfile profile =  dao.getUserProfile(user.getUserId());
+                if (profile == null || profile.getFullName() == null)
+                {
+                    view.NamePromptDialog.display(user.getUserId());
+                    profile = dao.getUserProfile(user.getUserId());
+                    if (profile == null || profile.getFullName() == null || profile.getFullName().trim().isEmpty()) {
+                        System.out.println("Người dùng không nhập tên, không cho đăng nhập.");
+                        return null;
+                    }
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        return user;
     }
     public static boolean register(String name, String email, String password) {
         if (UserDAO.findByUsername(name) != null) return false;

@@ -7,6 +7,7 @@ import javafx.geometry.NodeOrientation;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
@@ -21,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.List;
 import java.util.function.Consumer;
+import javafx.scene.shape.Circle;
 
 public class ChatPane {
     private final BorderPane view;
@@ -34,6 +36,8 @@ public class ChatPane {
     private int chatId;
     private int currID;
     private int friendId;
+    private String myAvatarUrl;
+    private String friendAvatarUrl;
 
     // chat pane:
     public ChatPane(int chatId, int currID, int friendId) {
@@ -111,24 +115,10 @@ public class ChatPane {
                     System.out.println("[ChatPane] No messages found for chatId: " + chatId);
                 }
                 for (Message msg : oldMessages) {
-                    boolean isSender = msg.getSenderID() == currID;
-                    if (msg.getMst() == Message.MessageType.IMAGE) {
-                        ImageView imageView = util.FileTransferHandler.receiveImage(msg.getContent());
-                        if (imageView != null) {
-                            HBox bubble = util.FileTransferHandler.buildImageBubble(imageView, isSender);
-                            messagesBox.getChildren().add(bubble);
-                        }
-                    } else if (msg.getMst() == Message.MessageType.FILE) {
-                        String[] parts = util.FileTransfer.parseFileMessage(msg.getContent());
-                        if (parts.length == 3) {
-                            String fileName = parts[1];
-                            byte[] fileData = util.FileTransfer.decodeBase64File(parts[2]);
-                            HBox download = util.FileTransfer.buildDownloadableFile(fileName, fileData, view.getScene().getWindow(), isSender);
-                            messagesBox.getChildren().add(download);
-                        }
-                    } else {
-                        messagesBox.getChildren().add(createMessageBubble(msg.getContent(), isSender, msg.getCreateAt()));
-                    }
+                    int senderId = msg.getSenderID();
+                    boolean isSender = senderId == currID;
+                    String avatarUrl = getAvatarUrlByUserId(senderId);
+                    messagesBox.getChildren().add(createMessageBubble(msg.getContent(), isSender, avatarUrl, msg.getCreateAt()));
                 }
                 scrollToBottom();
             };
@@ -156,6 +146,7 @@ public class ChatPane {
                         String content = parts[4];
                         if (msgChatId == this.chatId) {
                             boolean isSender = senderId == currID;
+                            String avatarUrl = getAvatarUrlByUserId(senderId);
                             // Bỏ qua tin nhắn dạng "x: x" (kỹ thuật)
                             if (content.matches("\\d+\\s*:\\s*\\d+")) {
                                 return;
@@ -175,7 +166,7 @@ public class ChatPane {
                                     messagesBox.getChildren().add(download);
                                 }
                             } else {
-                                messagesBox.getChildren().add(createMessageBubble(content, isSender, java.time.LocalDateTime.now()));
+                                messagesBox.getChildren().add(createMessageBubble(content, isSender, avatarUrl, java.time.LocalDateTime.now()));
                             }
                             scrollToBottom();
                         }
@@ -388,29 +379,69 @@ public class ChatPane {
         return (end >= 0 && raw.length() > end + 2) ? raw.substring(end + 2) : raw;
     }
 
-    private HBox createMessageBubble(String text, boolean isSender, LocalDateTime timestamp) {
-        VBox bubbleBox = new VBox(5);
-        bubbleBox.setAlignment(isSender ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+    private HBox createMessageBubble(String text, boolean isSender, String avatarUrl, LocalDateTime timestamp) {
+        if ("3: 3".equals(text)) {
+            return new HBox(); // Không hiển thị gì cả
+        }
+
+        ImageView avatar = new ImageView();
+        try {
+            if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                if (avatarUrl.startsWith("http")) {
+                    avatar.setImage(new Image(avatarUrl, true));
+                } else {
+                    File file = new File(avatarUrl);
+                    if (file.exists()) {
+                        avatar.setImage(new Image(file.toURI().toString()));
+                    } else {
+                        InputStream defaultAvatar = getClass().getResourceAsStream("/default_avatar.png");
+                        if (defaultAvatar != null) {
+                            avatar.setImage(new Image(defaultAvatar));
+                        }
+                    }
+                }
+            } else {
+                InputStream defaultAvatar = getClass().getResourceAsStream("/default_avatar.png");
+                if (defaultAvatar != null) {
+                    avatar.setImage(new Image(defaultAvatar));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[ERROR] Không thể tải avatar từ URL: " + avatarUrl);
+        }
+
+        avatar.setFitWidth(32);
+        avatar.setFitHeight(32);
+        avatar.setClip(new Circle(16, 16, 16));
 
         Label msgLabel = new Label(text);
         msgLabel.setWrapText(true);
         msgLabel.setFont(Font.font("Segoe UI Emoji", 16));
         msgLabel.setPadding(new Insets(10));
         msgLabel.setMaxWidth(300);
-        msgLabel.setStyle("-fx-background-color: " + (isSender ? "#6a00f4; -fx-text-fill: white;" : "#e0e0e0;") + " -fx-background-radius: 10;");
+        msgLabel.setStyle("-fx-background-color: " + (isSender ? "#6a00f4; -fx-text-fill: white;" : "#e0e0e0;") + " -fx-background-radius: 15;");
 
         String time = timestamp.format(DateTimeFormatter.ofPattern("HH:mm"));
         Label timeLabel = new Label(time);
         timeLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: gray;");
         timeLabel.setPadding(new Insets(0, 5, 0, 5));
 
-        bubbleBox.getChildren().addAll(msgLabel, timeLabel);
+        VBox bubbleBox = new VBox(msgLabel, timeLabel);
+        bubbleBox.setAlignment(isSender ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
 
-        HBox bubble = new HBox(bubbleBox);
-        bubble.setAlignment(isSender ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+        HBox bubble = new HBox();
+        if (isSender) {
+            bubble.getChildren().addAll(bubbleBox, avatar);
+            bubble.setAlignment(Pos.CENTER_RIGHT);
+        } else {
+            bubble.getChildren().addAll(avatar, bubbleBox);
+            bubble.setAlignment(Pos.CENTER_LEFT);
+        }
+        bubble.setSpacing(8);
         bubble.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
         return bubble;
     }
+
 
     private void scrollToBottom() {
         Platform.runLater(() -> {
@@ -466,5 +497,21 @@ public class ChatPane {
 
     public void rejectFriendRequest(int fromUserId) {
         chatClient.rejectFriendRequest(fromUserId, Integer.parseInt(userId));
+    }
+
+    // Lấy avatar động từ DB theo userId
+    private String getAvatarUrlByUserId(int userId) {
+        String avatar = models.UserDAO.getPictureByUserID(userId);
+        if (avatar == null || avatar.isEmpty() || avatar.equals("Default Picture")) {
+            try {
+                models.UserProfileDAO dao = new models.UserProfileDAO();
+                models.UserProfile profile = dao.getUserProfile(userId);
+                if (profile != null && profile.getAvatarPicture() != null && !profile.getAvatarPicture().isEmpty()) {
+                    return profile.getAvatarPicture();
+                }
+            } catch (Exception e) {}
+            return null;
+        }
+        return avatar;
     }
 }

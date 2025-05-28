@@ -101,7 +101,7 @@ public class AuthView {
                 else AuthController.clearRememberedUser();
 
                 showAlert(Alert.AlertType.INFORMATION, "Login successful!");
-                Scene mainScene = ChatMainView.createScene(primaryStage, user);
+                Scene mainScene = ChatMainView1.createScene(primaryStage, user);
                 primaryStage.setScene(mainScene);
 
                 // TODO: load main main.java.view

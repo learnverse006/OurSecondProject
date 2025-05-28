@@ -11,7 +11,13 @@ public class FriendInfo {
         this.avatarUser = avatarUser;
     }
 
+    public FriendInfo() {}
+
     public int getUserId() { return userId; }
     public String getFullName() { return fullName; }
     public String getAvatarUser() { return avatarUser; }
+
+    public void setUserId(int userId) { this.userId = userId; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    public void setAvatarUser(String avatarUser) { this.avatarUser = avatarUser; }
 } 
