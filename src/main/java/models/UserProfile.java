@@ -12,11 +12,13 @@ public class UserProfile {
     private String discordLink;
     private String portfolioLink;
     private String coverPicture;
+    private String avatarPicture;
     public UserProfile() {}
 
     // constructor for all object:))
     public UserProfile(int userId, String fullName, String jobTitle, String bio, String location, String exp,
-                       String website, String facebookLink, String discordLink, String portfolioLink, String coverPicture) {
+                       String website, String facebookLink, String discordLink, String portfolioLink, String coverPicture,
+                       String avatarPicture) {
         this.userId = userId;
         this.fullName = fullName;
         this.jobTitle = jobTitle;
@@ -28,6 +30,7 @@ public class UserProfile {
         this.discordLink = discordLink;
         this.portfolioLink = portfolioLink;
         this.coverPicture = coverPicture;
+        this.avatarPicture = avatarPicture;
     }
 
     public void setUserId(int userId) {
@@ -118,6 +121,13 @@ public class UserProfile {
         return website;
     }
 
+    public void setAvatarPicture(String avatarPicture) {
+        this.avatarPicture = avatarPicture;
+    }
+
+    public String getAvatarPicture() {
+        return avatarPicture;
+    }
     @Override
     public String toString() {
         return super.toString();

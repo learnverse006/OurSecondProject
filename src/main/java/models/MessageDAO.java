@@ -47,16 +47,21 @@ public class MessageDAO {
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, chatID);
             ResultSet rs = stmt.executeQuery();
-
             while (rs.next()) {
                 Integer receiverId = rs.getObject("receiver_id") != null ? rs.getInt("receiver_id") : null;
-                Message.MessageType type = switch (rs.getString("message_type")) {
-                    case "T" -> Message.MessageType.TEXT;
-                    case "I" -> Message.MessageType.IMAGE;
-                    case "E" -> Message.MessageType.EMOJI;
-                    case "F" -> Message.MessageType.FILE;
-                    default -> Message.MessageType.TEXT;
-                };
+                String typeStr = rs.getString("message_type");
+                Message.MessageType type;
+                if (typeStr == null || typeStr.equals("T")) {
+                    type = Message.MessageType.TEXT;
+                } else if (typeStr.equals("I")) {
+                    type = Message.MessageType.IMAGE;
+                } else if (typeStr.equals("E")) {
+                    type = Message.MessageType.EMOJI;
+                } else if (typeStr.equals("F")) {
+                    type = Message.MessageType.FILE;
+                } else {
+                    type = Message.MessageType.TEXT;
+                }
                 Message msg = new Message(
                         rs.getInt("message_id"),
                         rs.getInt("chat_id"),
@@ -69,6 +74,7 @@ public class MessageDAO {
                 messages.add(msg);
             }
         }
+        System.out.println("[MessageDAO] getMessageByChatID(" + chatID + ") => " + messages.size() + " messages");
         return messages;
     }
 
@@ -85,13 +91,26 @@ public class MessageDAO {
 
             while (rs.next()) {
                 Integer receiverId = rs.getObject("receiver_id") != null ? rs.getInt("receiver_id") : null;
+                String typeStr = rs.getString("message_type");
+                Message.MessageType type;
+                if (typeStr == null || typeStr.equals("T")) {
+                    type = Message.MessageType.TEXT;
+                } else if (typeStr.equals("I")) {
+                    type = Message.MessageType.IMAGE;
+                } else if (typeStr.equals("E")) {
+                    type = Message.MessageType.EMOJI;
+                } else if (typeStr.equals("F")) {
+                    type = Message.MessageType.FILE;
+                } else {
+                    type = Message.MessageType.TEXT;
+                }
                 Message msg = new Message(
                         rs.getInt("message_id"),
                         rs.getInt("chat_id"),
                         rs.getInt("sender_id"),
                         receiverId,
                         rs.getString("content"),
-                        Message.MessageType.valueOf(rs.getString("message_type")),
+                        type,
                         rs.getTimestamp("created_at").toLocalDateTime()
                 );
                 messages.add(msg);

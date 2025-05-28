@@ -15,10 +15,12 @@ import socket.*;
 import models.*;
 import java.util.*;
 import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.io.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class ChatPane {
     private final BorderPane view;
@@ -26,9 +28,18 @@ public class ChatPane {
     private final ChatClient chatClient = new ChatClient();
     private final String userId;
     private Window window;
+    private Consumer<String> onFriendRequestReceived;
+    private Consumer<String> onFriendRequestAccepted;
+    private Consumer<String> onFriendRequestRejected;
+    private int chatId;
+    private int currID;
+    private int friendId;
 
     // chat pane:
-    public ChatPane(int chatId, int currID) {
+    public ChatPane(int chatId, int currID, int friendId) {
+        this.chatId = chatId;
+        this.currID = currID;
+        this.friendId = friendId;
         view = new BorderPane();
         this.userId = String.valueOf(currID);
         view.setStyle("-fx-background-color: #ffffff;");
@@ -91,28 +102,32 @@ public class ChatPane {
         view.setBottom(chatField);
         // Load history and scroll to bottom
         try {
+            System.out.println("[ChatPane] Loading history for chatId: " + chatId + ", currID: " + currID);
             List<Message> oldMessages = MessageDAO.getMessageByChatID(chatId);
+            System.out.println("[ChatPane] Loaded messages: " + oldMessages.size());
+            messagesBox.getChildren().clear();
             Runnable loadHistory = () -> {
+                if (oldMessages.isEmpty()) {
+                    System.out.println("[ChatPane] No messages found for chatId: " + chatId);
+                }
                 for (Message msg : oldMessages) {
-                    boolean isSender = msg.getSenderID() == Integer.parseInt(userId);
-
-                    if (msg.getMst() == Message.MessageType.IMAGE && msg.getContent().startsWith("[IMG]")) {
-                        ImageView img = util.FileTransferHandler.receiveImage(msg.getContent());
-                        if (img != null) {
-                            HBox bubble = util.FileTransferHandler.buildImageBubble(img, isSender);
+                    boolean isSender = msg.getSenderID() == currID;
+                    if (msg.getMst() == Message.MessageType.IMAGE) {
+                        ImageView imageView = util.FileTransferHandler.receiveImage(msg.getContent());
+                        if (imageView != null) {
+                            HBox bubble = util.FileTransferHandler.buildImageBubble(imageView, isSender);
                             messagesBox.getChildren().add(bubble);
                         }
-                    } else if (msg.getMst() == Message.MessageType.FILE && msg.getContent().startsWith("[FILE]:")) {
+                    } else if (msg.getMst() == Message.MessageType.FILE) {
                         String[] parts = util.FileTransfer.parseFileMessage(msg.getContent());
                         if (parts.length == 3) {
+                            String fileName = parts[1];
                             byte[] fileData = util.FileTransfer.decodeBase64File(parts[2]);
-                            if (window != null) {
-                                HBox fileBubble = util.FileTransfer.buildDownloadableFile(parts[1], fileData, window, isSender);
-                                messagesBox.getChildren().add(fileBubble);
-                            }
+                            HBox download = util.FileTransfer.buildDownloadableFile(fileName, fileData, view.getScene().getWindow(), isSender);
+                            messagesBox.getChildren().add(download);
                         }
                     } else {
-                        messagesBox.getChildren().add(createMessageBubble(msg.getContent(), isSender));
+                        messagesBox.getChildren().add(createMessageBubble(msg.getContent(), isSender, msg.getCreateAt()));
                     }
                 }
                 scrollToBottom();
@@ -128,43 +143,71 @@ public class ChatPane {
 
         // Socket setup
         try {
-            chatClient.connect("26.66.135.84", 1234);
+            chatClient.connect("26.66.135.84", 1234, currID);
             chatClient.send(userId); // gửi tên user đầu tiên để main.java.server nhận biết
 
             chatClient.listen(message -> Platform.runLater(() -> {
-                String sender = extractSender(message);
-                String content = extractContent(message);
-                boolean isSender = sender.equals(userId);
-
-                // Nếu tin nhắn đã có trong UI thì bỏ qua
-                if (isDuplicateMessage(content)) {
+                // Chỉ xử lý các message thực sự
+                if (message.startsWith("MESSAGE:")) {
+                    String[] parts = message.split(":", 5);
+                    if (parts.length == 5) {
+                        int msgChatId = Integer.parseInt(parts[1]);
+                        int senderId = Integer.parseInt(parts[2]);
+                        String content = parts[4];
+                        if (msgChatId == this.chatId) {
+                            boolean isSender = senderId == currID;
+                            // Bỏ qua tin nhắn dạng "x: x" (kỹ thuật)
+                            if (content.matches("\\d+\\s*:\\s*\\d+")) {
+                                return;
+                            }
+                            if (content.startsWith("[IMG]")) {
+                                ImageView imageView = util.FileTransferHandler.receiveImage(content);
+                                if (imageView != null) {
+                                    HBox bubble = util.FileTransferHandler.buildImageBubble(imageView, isSender);
+                                    messagesBox.getChildren().add(bubble);
+                                }
+                            } else if (content.startsWith("[FILE]:")) {
+                                String[] fileParts = util.FileTransfer.parseFileMessage(content);
+                                if (fileParts.length == 3) {
+                                    String fileName = fileParts[1];
+                                    byte[] fileData = util.FileTransfer.decodeBase64File(fileParts[2]);
+                                    HBox download = util.FileTransfer.buildDownloadableFile(fileName, fileData, view.getScene().getWindow(), isSender);
+                                    messagesBox.getChildren().add(download);
+                                }
+                            } else {
+                                messagesBox.getChildren().add(createMessageBubble(content, isSender, java.time.LocalDateTime.now()));
+                            }
+                            scrollToBottom();
+                        }
+                    }
                     return;
-                }
-
-                if (content.startsWith("[FILE]:")) {
-                    String[] parts = util.FileTransfer.parseFileMessage(content);
+                } else if (message.startsWith(ChatClient.FRIEND_REQUEST_NOTIFICATION)) {
+                    String[] parts = message.split(":");
                     if (parts.length == 3) {
-                        String fileName = parts[1];
-                        byte[] fileData = util.FileTransfer.decodeBase64File(parts[2]);
-                        HBox download = util.FileTransfer.buildDownloadableFile(fileName, fileData, view.getScene().getWindow(), isSender);
-                        messagesBox.getChildren().add(download);
-                        scrollToBottom();
+                        int fromUserId = Integer.parseInt(parts[1]);
+                        if (onFriendRequestReceived != null) {
+                            onFriendRequestReceived.accept(String.valueOf(fromUserId));
+                        }
                     }
-                    return;
-                }
-
-                if (content.startsWith("[IMG]")) {
-                    ImageView imageView = util.FileTransferHandler.receiveImage(content);
-                    if (imageView != null) {
-                        HBox bubble = util.FileTransferHandler.buildImageBubble(imageView, isSender);
-                        messagesBox.getChildren().add(bubble);
-                        scrollToBottom();
+                } else if (message.startsWith(ChatClient.FRIEND_ACCEPT)) {
+                    String[] parts = message.split(":");
+                    if (parts.length == 3) {
+                        int fromUserId = Integer.parseInt(parts[1]);
+                        int toUserId = Integer.parseInt(parts[2]);
+                        if (onFriendRequestAccepted != null) {
+                            onFriendRequestAccepted.accept(String.valueOf(fromUserId));
+                        }
                     }
-                    return;
+                } else if (message.startsWith(ChatClient.FRIEND_REJECT)) {
+                    String[] parts = message.split(":");
+                    if (parts.length == 3) {
+                        int fromUserId = Integer.parseInt(parts[1]);
+                        if (onFriendRequestRejected != null) {
+                            onFriendRequestRejected.accept(String.valueOf(fromUserId));
+                        }
+                    }
                 }
-
-                messagesBox.getChildren().add(createMessageBubble(content, isSender));
-                scrollToBottom();
+                // Các message khác (ví dụ: chỉ là số, userId, LOGIN, ...) thì bỏ qua, KHÔNG render ra UI!
             }));
 
 
@@ -229,24 +272,15 @@ public class ChatPane {
 
         sendButton.setOnAction(e -> {
             String text = messageField.getText().trim();
-//            try {
-//                String crypt = AESUtil.encrypt(text, "1234567890123456");
-//            } catch (Exception ex) {
-//                throw new RuntimeException(ex);
-//            }
-
             if (!text.isEmpty()) {
-                chatClient.send(text);
-                messagesBox.getChildren().add(createMessageBubble(text, true));
-                scrollToBottom();
+                String msgToSend = String.format("MESSAGE:%d:%d:%d:%s", chatId, currID, friendId, text);
+                chatClient.send(msgToSend);
                 messageField.clear();
-
                 try {
                     Message message = new Message();
                     message.setChatID(chatId);
                     message.setSenderID(currID);
-                    message.setReceiverID(0);
-//                    message.setContent(AESUtil.encrypt(text, "1234123412341234"));
+                    message.setReceiverID(friendId); // hoặc null nếu là group
                     message.setContent(text);
                     message.setMessageType(Message.MessageType.TEXT);
                     message.setCreateAt(java.time.LocalDateTime.now());
@@ -354,7 +388,7 @@ public class ChatPane {
         return (end >= 0 && raw.length() > end + 2) ? raw.substring(end + 2) : raw;
     }
 
-    private HBox createMessageBubble(String text, boolean isSender) {
+    private HBox createMessageBubble(String text, boolean isSender, LocalDateTime timestamp) {
         VBox bubbleBox = new VBox(5);
         bubbleBox.setAlignment(isSender ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
 
@@ -365,7 +399,7 @@ public class ChatPane {
         msgLabel.setMaxWidth(300);
         msgLabel.setStyle("-fx-background-color: " + (isSender ? "#6a00f4; -fx-text-fill: white;" : "#e0e0e0;") + " -fx-background-radius: 10;");
 
-        String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+        String time = timestamp.format(DateTimeFormatter.ofPattern("HH:mm"));
         Label timeLabel = new Label(time);
         timeLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: gray;");
         timeLabel.setPadding(new Insets(0, 5, 0, 5));
@@ -408,5 +442,29 @@ public class ChatPane {
             }
         }
         return false;
+    }
+
+    public void setOnFriendRequestReceived(Consumer<String> callback) {
+        this.onFriendRequestReceived = callback;
+    }
+
+    public void setOnFriendRequestAccepted(Consumer<String> callback) {
+        this.onFriendRequestAccepted = callback;
+    }
+
+    public void setOnFriendRequestRejected(Consumer<String> callback) {
+        this.onFriendRequestRejected = callback;
+    }
+
+    public void sendFriendRequest(int toUserId) {
+        chatClient.sendFriendRequest(Integer.parseInt(userId), toUserId);
+    }
+
+    public void acceptFriendRequest(int fromUserId) {
+        chatClient.acceptFriendRequest(fromUserId, Integer.parseInt(userId));
+    }
+
+    public void rejectFriendRequest(int fromUserId) {
+        chatClient.rejectFriendRequest(fromUserId, Integer.parseInt(userId));
     }
 }

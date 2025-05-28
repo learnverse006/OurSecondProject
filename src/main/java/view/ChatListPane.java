@@ -1,4 +1,3 @@
-
 package view;
 
 import javafx.collections.FXCollections;
@@ -9,46 +8,46 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
-
+import models.FriendInfo;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class ChatListPane {
     private final BorderPane view;
 
-    public ChatListPane(Consumer<Integer> onChatSelected) {
+    public ChatListPane(List<FriendInfo> friends, Consumer<FriendInfo> onChatSelected) {
         view = new BorderPane();
         view.setPadding(new Insets(10));
         view.setStyle("-fx-background-color: #ffffff; -fx-border-color: #cccccc; -fx-border-width: 1;");
 
         VBox container = new VBox(10);
 
-        Label title = new Label("Recent Chats");
+        Label title = new Label("Danh sách bạn bè");
         title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        ListView<String> chatList = new ListView<>();
-        ObservableList<String> chats = FXCollections.observableArrayList("Group 1");
+        ListView<FriendInfo> chatList = new ListView<>();
+        ObservableList<FriendInfo> chats = FXCollections.observableArrayList(friends);
         chatList.setItems(chats);
 
         chatList.setCellFactory(list -> new ListCell<>() {
             @Override
-            protected void updateItem(String item, boolean empty) {
+            protected void updateItem(FriendInfo item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
                     setText(null);
                     setStyle("");
                 } else {
-                    setText(item);
+                    setText(item.getFullName());
                     setStyle("-fx-padding: 10px; -fx-font-size: 14px;");
                 }
             }
         });
 
-        chatList.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && newVal.intValue() == 0) {
-                onChatSelected.accept(1);
+        chatList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                onChatSelected.accept(newVal);
             }
         });
-
 
         container.getChildren().addAll(title, chatList);
         view.setCenter(container);

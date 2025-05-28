@@ -96,6 +96,18 @@ public class UserDAO {
         }
         return false;
     }
+
+    public static User mapResultSetToUser(ResultSet rs) throws SQLException {
+        return new User(
+                rs.getInt("user_id"),
+                rs.getString("username"),
+                rs.getString("email"),
+                rs.getString("password_hash"),
+                rs.getString("profile_picture"),
+                rs.getString("status"),
+                rs.getTimestamp("last_seen")
+        );
+    }
     //
 //     Insert user by default : thêm người dùng với 3 trường dữ liệu chính (user/name, email, password)
     //  Có thể dùng over loading method cũng được

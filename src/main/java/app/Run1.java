@@ -4,7 +4,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import view.AuthView;
 
-public class run1 extends Application {
+public class Run1 extends Application {
     @Override
     public void start(Stage primaryStage) {
         Scene scene = AuthView.createScene(primaryStage);

@@ -56,8 +56,8 @@ public class RegisterForm {
         formBox.getChildren().addAll(title, nameField, emailField, passwordField, registerBtn, loginLink);
         formBox.setMaxWidth(350);
         formBox.setMaxHeight(400);
-
-        Image bgImage = new Image(RegisterForm.class.getResource("/resources/BGLogin.jpg").toExternalForm());
+        String imagePath = System.getProperty("user.dir") + "/src/main/java/resources/BGLogin.jpg";
+        Image bgImage = new Image("file:" + imagePath);
         ImageView bgView = new ImageView(bgImage);
         bgView.setPreserveRatio(false);
         bgView.setSmooth(true);

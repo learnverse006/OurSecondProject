@@ -107,19 +107,21 @@ public class ProfileEditController {
         profile.setJobTitle(jobField.getText());
         profile.setExp(expField.getText());
         profile.setLocation(locationField.getText());
-        if (coverPath == null || coverPath.isEmpty()) {
+
+        if ((coverPath == null || coverPath.isEmpty()) & (avatarPath == null || avatarPath.isEmpty())) {
             try {
                 UserProfileDAO dao = new UserProfileDAO();
                 UserProfile oldProfile = dao.getUserProfile(currentUserId);
                 if (oldProfile != null) {
                     coverPath = oldProfile.getCoverPicture();
+                    avatarPath = oldProfile.getAvatarPicture();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         profile.setCoverPicture(coverPath);
-
+        profile.setAvatarPicture(avatarPath);
         try {
             UserProfileDAO dao = new UserProfileDAO();
             boolean success = dao.updateProfile(profile);
@@ -152,11 +154,18 @@ public class ProfileEditController {
                 facebookField.setText(profile.getFacebookLink());
                 expField.setText(profile.getExp());
                 if(profile.getCoverPicture() != null && !profile.getCoverPicture().isEmpty()) {
-                    File file = new File(profile.getCoverPicture());
-                    if (file.exists()) {
-                        coverImageView.setImage(new Image(file.toURI().toString()));
+                    File fileCover = new File(profile.getCoverPicture());
+                    if (fileCover.exists()) {
+                        coverImageView.setImage(new Image(fileCover.toURI().toString()));
                     }
                     coverPath = profile.getCoverPicture();
+                }
+                if(profile.getAvatarPicture() != null && !profile.getAvatarPicture().isEmpty()) {
+                    File fileAvatar = new File(profile.getAvatarPicture());
+                    if (fileAvatar.exists()) {
+                        avatarImageView.setImage(new Image(fileAvatar.toURI().toString()));
+                    }
+                    avatarPath = profile.getCoverPicture();
                 }
             }
         } catch(Exception e) {

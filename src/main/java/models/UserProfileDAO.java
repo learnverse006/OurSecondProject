@@ -7,17 +7,16 @@ import java.sql.PreparedStatement;
 
 //import main.java.models.UserProfile;
 public class UserProfileDAO {
-    private static final Connection conn = DatabaseConnection.getConnection();
-
     // If userID đã tồn tại -> Update, xử lí try-catch
     public boolean updateProfile(UserProfile userProfile) throws SQLException{
         String sql = "INSERT INTO user_profile (user_id, full_name, job_title, bio, location, exp, website, " +
-                "facebook_link, discord_link, portfolio_link, cover_picture) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                "facebook_link, discord_link, portfolio_link, cover_picture, avatar_user) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE full_name=?, job_title=?, bio=?, location=?, exp=?, website=?, " +
-                "facebook_link=?, discord_link=?, portfolio_link=?, cover_picture=?";
+                "facebook_link=?, discord_link=?, portfolio_link=?, cover_picture=?, avatar_user=?";
 
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userProfile.getUserId());
             stmt.setString(2, userProfile.getFullName());
@@ -30,25 +29,23 @@ public class UserProfileDAO {
             stmt.setString(9, userProfile.getDiscordLink());
             stmt.setString(10, userProfile.getPortfolioLink());
             stmt.setString(11, userProfile.getCoverPicture());
+            stmt.setString(12, userProfile.getAvatarPicture());
 
             // If Have user ID in Database
-            stmt.setString(12, userProfile.getFullName());
-            stmt.setString(13, userProfile.getJobTitle());
-            stmt.setString(14, userProfile.getBio());
-            stmt.setString(15, userProfile.getLocation());
-            stmt.setString(16, userProfile.getExp());
-            stmt.setString(17, userProfile.getWebsite());
-            stmt.setString(18, userProfile.getFacebookLink());
-            stmt.setString(19, userProfile.getDiscordLink());
-            stmt.setString(20, userProfile.getPortfolioLink());
-            stmt.setString(21, userProfile.getCoverPicture());
-            return stmt.executeUpdate() > 0;
+            stmt.setString(13, userProfile.getFullName());
+            stmt.setString(14, userProfile.getJobTitle());
+            stmt.setString(15, userProfile.getBio());
+            stmt.setString(16, userProfile.getLocation());
+            stmt.setString(17, userProfile.getExp());
+            stmt.setString(18, userProfile.getWebsite());
+            stmt.setString(19, userProfile.getFacebookLink());
+            stmt.setString(20, userProfile.getDiscordLink());
+            stmt.setString(21, userProfile.getPortfolioLink());
+            stmt.setString(22, userProfile.getCoverPicture());
+            stmt.setString(23, userProfile.getAvatarPicture());
 
+            return stmt.executeUpdate() > 0;
         }
-//        catch (Exception e) {
-//            System.err.println("Lỗi khi cập nhật thông tin tài khoản");
-//        }
-//        return false;
     }
 
 //    public UserProfile getUserPicture(int userID) throws SQLException {
@@ -57,7 +54,8 @@ public class UserProfileDAO {
 
     public UserProfile getUserProfile(int userID) throws SQLException {
         String sql = "SELECT * FROM user_profile WHERE user_id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userID);
             ResultSet rs = stmt.executeQuery();
 
@@ -73,7 +71,8 @@ public class UserProfileDAO {
                         rs.getString("facebook_link"),
                         rs.getString("discord_link"),
                         rs.getString("portfolio_link"),
-                        rs.getString("cover_picture")
+                        rs.getString("cover_picture"),
+                        rs.getString("avatar_user")
                 );
             }
         }

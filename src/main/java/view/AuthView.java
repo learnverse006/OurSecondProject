@@ -63,7 +63,9 @@ public class AuthView {
         formBox.setMaxWidth(350);
         formBox.setMaxHeight(300);
 
-        Image bgImage = new Image(AuthView.class.getResource("/resources/BGLogin.jpg").toExternalForm());
+        // Load image using File
+        String imagePath = System.getProperty("user.dir") + "/src/main/java/resources/BGLogin.jpg";
+        Image bgImage = new Image("file:" + imagePath);
         ImageView bgView = new ImageView(bgImage);
         bgView.setPreserveRatio(false);
         bgView.setSmooth(true);
